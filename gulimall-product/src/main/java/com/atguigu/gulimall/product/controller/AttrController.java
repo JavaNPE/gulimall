@@ -22,7 +22,7 @@ import com.atguigu.common.utils.R;
  *
  * @author ÍõÈ½ê¿
  * @email daki9981@qq.com
- * @date 2021-08-13 20:49:32
+ * @date 2021-08-14 12:15:03
  */
 @RestController
 @RequestMapping("product/attr")

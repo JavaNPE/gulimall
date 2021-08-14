@@ -10,33 +10,33 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.atguigu.gulimall.product.entity.AttrGroupEntity;
-import com.atguigu.gulimall.product.service.AttrGroupService;
+import com.atguigu.gulimall.product.entity.CategoryEntity;
+import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.common.utils.PageUtils;
 import com.atguigu.common.utils.R;
 
 
 
 /**
- * 属性分组
+ * 商品三级分类
  *
  * @author ÍõÈ½ê¿
  * @email daki9981@qq.com
  * @date 2021-08-14 12:15:03
  */
 @RestController
-@RequestMapping("product/attrgroup")
-public class AttrGroupController {
+@RequestMapping("product/category")
+public class CategoryController {
     @Autowired
-    private AttrGroupService attrGroupService;
+    private CategoryService categoryService;
 
     /**
      * 列表
      */
     @RequestMapping("/list")
-    //@RequiresPermissions("product:attrgroup:list")
+    //@RequiresPermissions("product:category:list")
     public R list(@RequestParam Map<String, Object> params){
-        PageUtils page = attrGroupService.queryPage(params);
+        PageUtils page = categoryService.queryPage(params);
 
         return R.ok().put("page", page);
     }
@@ -45,21 +45,21 @@ public class AttrGroupController {
     /**
      * 信息
      */
-    @RequestMapping("/info/{attrGroupId}")
-    //@RequiresPermissions("product:attrgroup:info")
-    public R info(@PathVariable("attrGroupId") Long attrGroupId){
-		AttrGroupEntity attrGroup = attrGroupService.getById(attrGroupId);
+    @RequestMapping("/info/{catId}")
+    //@RequiresPermissions("product:category:info")
+    public R info(@PathVariable("catId") Long catId){
+		CategoryEntity category = categoryService.getById(catId);
 
-        return R.ok().put("attrGroup", attrGroup);
+        return R.ok().put("category", category);
     }
 
     /**
      * 保存
      */
     @RequestMapping("/save")
-    //@RequiresPermissions("product:attrgroup:save")
-    public R save(@RequestBody AttrGroupEntity attrGroup){
-		attrGroupService.save(attrGroup);
+    //@RequiresPermissions("product:category:save")
+    public R save(@RequestBody CategoryEntity category){
+		categoryService.save(category);
 
         return R.ok();
     }
@@ -68,9 +68,9 @@ public class AttrGroupController {
      * 修改
      */
     @RequestMapping("/update")
-    //@RequiresPermissions("product:attrgroup:update")
-    public R update(@RequestBody AttrGroupEntity attrGroup){
-		attrGroupService.updateById(attrGroup);
+    //@RequiresPermissions("product:category:update")
+    public R update(@RequestBody CategoryEntity category){
+		categoryService.updateById(category);
 
         return R.ok();
     }
@@ -79,9 +79,9 @@ public class AttrGroupController {
      * 删除
      */
     @RequestMapping("/delete")
-    //@RequiresPermissions("product:attrgroup:delete")
-    public R delete(@RequestBody Long[] attrGroupIds){
-		attrGroupService.removeByIds(Arrays.asList(attrGroupIds));
+    //@RequiresPermissions("product:category:delete")
+    public R delete(@RequestBody Long[] catIds){
+		categoryService.removeByIds(Arrays.asList(catIds));
 
         return R.ok();
     }

@@ -22,9 +22,11 @@ class GulimallProductApplicationTests {
 //        brandService.updateById(brandEntity);
 
 
-        /* brandEntity.setName("华为");
+        /*
+        brandEntity.setName("华为");
         brandService.save(brandEntity);
-        System.out.println("保存成功.....");*/
+        System.out.println("保存成功.....");
+        */
 
 
         List<BrandEntity> list = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
@@ -35,5 +37,4 @@ class GulimallProductApplicationTests {
             System.out.println(item);
         });
     }
-
 }
