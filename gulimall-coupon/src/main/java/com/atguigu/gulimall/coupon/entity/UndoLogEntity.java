@@ -37,11 +37,12 @@ public class UndoLogEntity implements Serializable {
 	 */
 	private String context;
 	/**
-	 * 
+	 *
 	 */
-	private Longblob rollbackInfo;
+//	private Longblob rollbackInfo;
+	private byte[] rollbackInfo; //TODO
 	/**
-	 * 
+	 *
 	 */
 	private Integer logStatus;
 	/**
