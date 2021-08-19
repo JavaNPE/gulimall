@@ -13,6 +13,16 @@ spring:
           predicates:
             - Query=url,jd
 
+        - id: admin_route
+          uri: lb://renren-fast # 路由给renren-fast
+          predicates:  # 什么情况下路由给它
+            - Path=/api/** # 默认前端项目都带上api前缀，就是我们前面题的localhost:88/api
+          filters:
+            - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}  # 把/api/* 改变成 /renren-fast/*
+
+## 前端项目，统一加上  /api 统一标识符
+## http://localhost:88/api/captcha.jpg    实际获取到的验证码请求地址：http://localhost:8080/renren-fast/captcha.ipg
+
 #spring:
 #  cloud:
 #    gateway:
