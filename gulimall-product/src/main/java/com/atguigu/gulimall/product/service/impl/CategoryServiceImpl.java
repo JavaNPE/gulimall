@@ -1,7 +1,12 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -16,6 +21,12 @@ import com.atguigu.gulimall.product.service.CategoryService;
 @Service("categoryService")
 public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity> implements CategoryService {
 
+/*  //方式一：注入我们的  CategoryDao
+    @Autowired
+    CategoryDao categoryDao;
+    //方式二：由于CategoryServiceImpl继承ServiceImpl 存在泛型 只需要使用 baseMapper即可
+    */
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
         IPage<CategoryEntity> page = this.page(
@@ -26,4 +37,46 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         return new PageUtils(page);
     }
 
+    @Override
+    public List<CategoryEntity> listWithTree() {
+        //1、查出所有分类
+        List<CategoryEntity> entities = baseMapper.selectList(null); //null表示没有查询条件，就表示查询所有
+
+        //2、组装成父子的树形结构
+        //方式二：(方式一：需要自动注入CategoryDao)由于CategoryServiceImpl继承ServiceImpl 存在泛型 只需要使用 baseMapper即可
+        //2.1:找到所有的一级分类
+        List<CategoryEntity> level1Menus = entities.stream().filter((categoryEntity) -> {  //建 Stream方式一：通过集合创建 (categoryEntity)的括号可以省略
+            //Stream 的中间操作：filter(Predicate p) 接收 Lambda ， 从流中排除某些元素
+            return categoryEntity.getParentCid() == 0;  //因为只有一条返回语句 return和{}也可以省略
+            //Stream 的终止操作:收集:collect(Collector c)将流转换为其他形式。把流中元素收集到Lis，用于给Stream中元素做汇总的方法
+        }).map((menu) -> {
+            menu.setChildren(getChildrens(menu, entities));
+            return menu;
+        }).sorted((menu1, menu2) -> {
+            //处理空指针异常
+            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
+        }).collect(Collectors.toList());
+
+        return level1Menus;
+    }
+
+    /**
+     * 递归查找获取某一个菜单的子菜单
+     *结合：空指针异常的处理方式：使用三目运算符
+     * @return
+     */
+    private List<CategoryEntity> getChildrens(CategoryEntity root, List<CategoryEntity> all) {//(当前菜单，所有菜单)
+        List<CategoryEntity> children = all.stream().filter(categoryEntity -> {
+            return categoryEntity.getParentCid().equals(root.getCatId());
+        }).map(categoryEntity -> {
+            //1、找到子菜单
+            categoryEntity.setChildren(getChildrens(categoryEntity, all));
+            return categoryEntity;
+        }).sorted((menu1, menu2) -> {
+            //2、菜单的排序：处理空指针异常
+            return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
+        }).collect(Collectors.toList());
+        return children;
+
+    }
 }
