@@ -17,6 +17,13 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+      logic-delete-value: 1   #逻辑删除的字段 1：表示删除
+      logic-not-delete-value: 0   #0代表没有删除
 
 server:
   port: 10000
+
+#在idea控制台中打印debug日志信息配置
+logging:
+  level:
+    com.atguigu.gulimall: debug

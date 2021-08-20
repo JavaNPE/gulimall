@@ -81,11 +81,18 @@ public class CategoryController {
 
     /**
      * 删除
+     * @RequestBody：这个注解就是想要获取请求体，必须发送POST请求（Get请求是没有请求体的）
+     * SpringMVC会自动将请求体中的数据（一般是JSON）,转为对应的对象
      */
     @RequestMapping("/delete")
     //@RequiresPermissions("product:category:delete")
     public R delete(@RequestBody Long[] catIds) {
-        categoryService.removeByIds(Arrays.asList(catIds));
+
+        //1、 检查当前删除的菜单，是否被别的地方引用
+        //categoryService.removeByIds(Arrays.asList(catIds)); 逆向生成的
+
+        //自定义的方法
+        categoryService.removeMenuByIds(Arrays.asList(catIds));
 
         return R.ok();
     }
