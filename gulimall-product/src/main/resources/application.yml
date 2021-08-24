@@ -8,6 +8,11 @@ spring:
     nacos:
       discovery:
         server-addr: 127.0.0.1:8848
+    alicloud:
+      access-key: LTAI5tQJe43xkmKionyVWfkH
+      secret-key: NYJesMLZJcVdFvhVx5bjEPw20vBe2z
+      oss:
+        endpoint: oss-cn-beijing.aliyuncs.com
 
 # MapperScan
 # sql映射文件位置
