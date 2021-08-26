@@ -56,6 +56,31 @@ public class BrandController {
         return R.ok().put("brand", brand);
     }
 
+//    /**
+//     * 保存
+//     * 单独处理异常
+//     * @Valid:告诉SpringMVC我们需要校验
+//     */
+//    @RequestMapping("/save")
+//    //@RequiresPermissions("product:brand:save")
+//    public R save(@Valid @RequestBody BrandEntity brand, BindingResult result) {
+//        HashMap<String, String> map = new HashMap<>();
+//        if (result.hasErrors()) {
+//            //1、获取校验的错误结果
+//            result.getFieldErrors().forEach((item) -> {
+//                //FieldError 获取到的错误提示
+//                String message = item.getDefaultMessage();
+//                //获取错误的属性的名字
+//                String field = item.getField();
+//                map.put(field, message);
+//            });
+//            return R.error(400, "提交的数据不合法").put("data", map);
+//        } else {
+//            brandService.save(brand);
+//        }
+//        return R.ok();
+//    }
+
     /**
      * 保存
      *
@@ -63,23 +88,13 @@ public class BrandController {
      */
     @RequestMapping("/save")
     //@RequiresPermissions("product:brand:save")
-    public R save(@Valid @RequestBody BrandEntity brand, BindingResult result) {
-        HashMap<String, String> map = new HashMap<>();
-        if (result.hasErrors()) {
-            //1、获取校验的错误结果
-            result.getFieldErrors().forEach((item) -> {
-                //FieldError 获取到的错误提示
-                String message = item.getDefaultMessage();
-                //获取错误的属性的名字
-                String field = item.getField();
-                map.put(field, message);
-            });
-            return R.error(400, "提交的数据不合法").put("data", map);
-        } else {
-            brandService.save(brand);
-        }
+    public R save(@Valid @RequestBody BrandEntity brand) {
+
+        brandService.save(brand);
+
         return R.ok();
     }
+
 
     /**
      * 修改
