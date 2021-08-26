@@ -14,7 +14,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
  * @Author Dali
  * @Date 2021/8/26 14:26
  * @Version 1.0
- * @Description: 编写一个自定义@ListValue的校验注解 这里校验的默认只能是Integer类型的
+ * @Description: 1)、编写一个自定义的校验注解,编写一个自定义@ListValue的校验注解 这里校验的默认只能是Integer类型的
  */
 @Documented
 @Constraint(validatedBy = {ListValueConstraintValidator.class}) //可以指定多个不同的校验器，适配不同类型的校验】
