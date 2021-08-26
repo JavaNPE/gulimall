@@ -59,12 +59,18 @@
             <groupId>com.alibaba.cloud</groupId>
             <artifactId>spring-cloud-starter-alibaba-nacos-config</artifactId>
         </dependency>
+        <dependency><!--校验-->
+            <groupId>javax.validation</groupId>
+            <artifactId>validation-api</artifactId>
+            <version>2.0.1.Final</version>
+        </dependency>
 
-<!--        <dependency>--><!--oss对象存储-->
-<!--            <groupId>com.alibaba.cloud</groupId>-->
-<!--            <artifactId>spring-cloud-starter-alicloud-oss</artifactId>-->
-<!--            <version>2.2.0.RELEASE</version>-->
-<!--        </dependency>-->
+
+        <!--        <dependency>--><!--oss对象存储-->
+        <!--            <groupId>com.alibaba.cloud</groupId>-->
+        <!--            <artifactId>spring-cloud-starter-alicloud-oss</artifactId>-->
+        <!--            <version>2.2.0.RELEASE</version>-->
+        <!--        </dependency>-->
     </dependencies>
 
     <dependencyManagement>
