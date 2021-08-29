@@ -3,6 +3,8 @@ package com.atguigu.gulimall.product.service.impl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -68,9 +70,32 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
         baseMapper.deleteBatchIds(asList);
     }
 
+    //[2,25,225]
+    @Override
+    public Long[] findCatelogPath(Long catelogId) {
+        List<Long> paths = new ArrayList<>();
+        List<Long> parentPath = findParentPath(catelogId, paths);//查出来的集合{225,34,2}是逆序的
+        //使用Collections工具类将其逆序转换
+        Collections.reverse(parentPath);    //完整路径：[2, 34, 225]
+
+        return parentPath.toArray(new Long[parentPath.size()]); //将list集合转成long[]数组
+    }
+
+    //递归: 递归收集所有父分类， 比如我们现在是查手机{225,34,2}  手机/手机通讯/手机(225)
+    private List<Long> findParentPath(Long catelogId, List<Long> paths) {
+        //1、收集当前节点id
+        paths.add(catelogId);
+        CategoryEntity byId = this.getById(catelogId);
+        if (byId.getParentCid() != 0) { //如果当前节点有父id
+            findParentPath(byId.getParentCid(), paths);
+        }
+        return paths;
+    }
+
     /**
      * 递归查找获取某一个菜单的子菜单
-     *结合：空指针异常的处理方式：使用三目运算符
+     * 结合：空指针异常的处理方式：使用三目运算符
+     *
      * @return
      */
     private List<CategoryEntity> getChildrens(CategoryEntity root, List<CategoryEntity> all) {//(当前菜单，所有菜单)
