@@ -4,7 +4,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.atguigu.common.valid.UpdateGroup;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -70,6 +72,7 @@ public class CategoryController {
 
     /**
      * 批量修改层级
+     *
      * @param category
      * @return
      */
@@ -88,15 +91,16 @@ public class CategoryController {
     @RequestMapping("/update")
     //@RequiresPermissions("product:category:update")
     public R update(@RequestBody CategoryEntity category) {
-        categoryService.updateById(category);
+//        categoryService.updateById(category);
+        categoryService.updateCascade(category);
 
         return R.ok();
     }
 
     /**
      * 删除
-     * @RequestBody：这个注解就是想要获取请求体，必须发送POST请求（Get请求是没有请求体的）
-     * SpringMVC会自动将请求体中的数据（一般是JSON）,转为对应的对象
+     *
+     * @RequestBody：这个注解就是想要获取请求体，必须发送POST请求（Get请求是没有请求体的） SpringMVC会自动将请求体中的数据（一般是JSON）,转为对应的对象
      */
     @RequestMapping("/delete")
     //@RequiresPermissions("product:category:delete")

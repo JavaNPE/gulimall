@@ -1,5 +1,7 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +20,7 @@ import com.atguigu.common.utils.Query;
 import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
+import org.springframework.transaction.annotation.Transactional;
 
 
 @Service("categoryService")
@@ -28,6 +31,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
     CategoryDao categoryDao;
     //方式二：由于CategoryServiceImpl继承ServiceImpl 存在泛型 只需要使用 baseMapper即可
     */
+
+    @Autowired
+    CategoryService categoryService;
+
+    @Autowired
+    CategoryBrandRelationService categoryBrandRelationService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -80,6 +89,38 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
         return parentPath.toArray(new Long[parentPath.size()]); //将list集合转成long[]数组
     }
+
+    /**
+     * 级联更新所有关联的数据
+     *方式一：通过xml文件格式操作数据库写法：目前报错：{"msg":"参数格式校验失败","code":10001}
+     * @param category
+     */
+    @Transactional  //这是一个事务= 更新自己还有更新级联的数据，所以加个事务
+    @Override
+    public void updateCascade(CategoryEntity category) {
+        //首先更新自己:一般都是通过this的方式通过id更新
+        this.updateById(category);    //视频中这么写的
+//        categoryService.updateById(category);
+        //更新关联表中的数据
+        categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+    }
+
+//    /**
+//     * 级联更新所有关联的数据
+//     * 方式二：通过mybatis-plus的方式直接修改数据库
+//     * @param category
+//     */
+//    @Transactional  //这是一个事务= 更新自己还有更新级联的数据，所以加个事务
+//    @Override
+//    public void updateCascade(CategoryEntity category) {
+//        //首先更新自己:一般都是通过this的方式通过id更新
+//        this.updateById(category);    //视频中这么写的
+////        categoryService.updateById(category);
+//        //更新关联表中的数据
+//        if (!StringUtils.isEmpty(category.getName())) {
+//            categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+//        }
+//    }
 
     //递归: 递归收集所有父分类， 比如我们现在是查手机{225,34,2}  手机/手机通讯/手机(225)
     private List<Long> findParentPath(Long catelogId, List<Long> paths) {
