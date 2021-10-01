@@ -1,13 +1,22 @@
 package com.atguigu.gulimall.product.service.impl;
 
 import com.atguigu.gulimall.product.dao.AttrAttrgroupRelationDao;
+import com.atguigu.gulimall.product.dao.AttrGroupDao;
+import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
+import com.atguigu.gulimall.product.entity.AttrGroupEntity;
+import com.atguigu.gulimall.product.entity.CategoryEntity;
+import com.atguigu.gulimall.product.vo.AttrRespVo;
 import com.atguigu.gulimall.product.vo.AttrVo;
+import jdk.nashorn.internal.ir.IfNode;
+import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
@@ -27,8 +36,15 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     @Autowired
     AttrAttrgroupRelationDao relationDao;
 
+    @Autowired
+    AttrGroupDao attrGroupDao;
+
+    @Autowired
+    CategoryDao categoryDao;
+
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
+        //分页方法
         IPage<AttrEntity> page = this.page(
                 new Query<AttrEntity>().getPage(params),
                 new QueryWrapper<AttrEntity>()
@@ -50,6 +66,47 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         relationEntity.setAttrGroupId(attr.getAttrGroupId());
         relationEntity.setAttrId(attrEntity.getAttrId());
         relationDao.insert(relationEntity);
+    }
+
+    @Override
+    public PageUtils queryBaseAttrPage(Map<String, Object> params, long catelogId) {
+        QueryWrapper<AttrEntity> queryWrapper = new QueryWrapper<>();
+        if (catelogId != 0) {    //如果有分类， catelogId==0查询全部
+            queryWrapper.eq("catelog_id", catelogId);   //如果分类id等于我们指定的值
+        }
+        String key = (String) params.get("key");    //按照key进行检索
+        if (!StringUtils.isEmpty(key)) {   //如果检索条件存在
+            //attr_id  attr_name
+            queryWrapper.and((wrapper) -> {
+                wrapper.eq("attr_id", key).or().like("attr_name", key);
+            });
+        }
+        //分页方法
+        IPage<AttrEntity> page = this.page(
+                new Query<AttrEntity>().getPage(params), queryWrapper
+        );
+        PageUtils pageUtils = new PageUtils(page);
+        List<AttrEntity> records = page.getRecords();
+        List<AttrRespVo> respVos = records.stream().map(attrEntity -> {
+            AttrRespVo attrRespVo = new AttrRespVo();
+            BeanUtils.copyProperties(attrEntity, attrRespVo);    //把attrEntity中的属性拷贝到attrRespVo中
+
+            //1、设置分类和分组的名字
+            AttrAttrgroupRelationEntity attrId = relationDao.selectOne(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_id", attrEntity.getAttrId()));
+            //Long attrGroupId = attrId.getAttrGroupId();
+            if (attrId != null) {
+                AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrId.getAttrGroupId());
+                attrRespVo.setGroupName(attrGroupEntity.getAttrGroupName());
+            }
+            CategoryEntity categoryEntity = categoryDao.selectById(attrEntity.getCatelogId());  //返回分类的实体信息
+            if (categoryEntity != null) {
+                attrRespVo.setCatelogName(categoryEntity.getName());
+            }
+
+            return attrRespVo;
+        }).collect(Collectors.toList());
+        pageUtils.setList(respVos);
+        return pageUtils;
     }
 
 }
