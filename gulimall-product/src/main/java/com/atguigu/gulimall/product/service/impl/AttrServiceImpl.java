@@ -8,6 +8,7 @@ import com.atguigu.gulimall.product.entity.AttrAttrgroupRelationEntity;
 import com.atguigu.gulimall.product.entity.AttrGroupEntity;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
+import com.atguigu.gulimall.product.vo.AttrGroupRelationVo;
 import com.atguigu.gulimall.product.vo.AttrRespVo;
 import com.atguigu.gulimall.product.vo.AttrVo;
 import com.baomidou.mybatisplus.core.conditions.update.UpdateWrapper;
@@ -16,6 +17,8 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -175,5 +178,44 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
                 relationDao.insert(relationEntity);
             }
         }
+    }
+
+    /**
+     * 根据分组id找到组内关联的所有属性（基本属性）
+     *
+     * @param attrgroupId
+     * @return
+     */
+    @Override
+    public List<AttrEntity> getRelationAttr(Long attrgroupId) {
+        //从表：pms_attr_attrgroup_relation中根据attr_group_id字段查询所有内容封装一个entities
+        List<AttrAttrgroupRelationEntity> entities = relationDao.selectList(new QueryWrapper<AttrAttrgroupRelationEntity>().eq("attr_group_id", attrgroupId));
+        //==>  Preparing: SELECT id,attr_id,attr_group_id,attr_sort FROM pms_attr_attrgroup_relation WHERE (attr_group_id = ?)
+        List<Long> attrIds = entities.stream().map((attr) -> {
+            return attr.getAttrId();
+        }).collect(Collectors.toList());//最终把attrId收集成一个集合
+
+        Collection<AttrEntity> attrEntities = this.listByIds(attrIds);   //按照属性的id集合查出所有的属性信息
+        return (List<AttrEntity>) attrEntities;
+    }
+
+    /**
+     * 12、删除属性与分组的关联关系
+     *
+     * @param vos
+     */
+    @Override
+    public void deleteRelation(AttrGroupRelationVo[] vos) {
+        //AttrGroupRelationVo[]是一个集合 如果我们选择了批量删除提交了很多数据，就会发送很多次删除请求；而我们希望只发送一次删除请求，也就不能这么写了
+        //relationDao.delete(new QueryWrapper<>().eq("attr_id",1L).eq("attr_group_id",1L))
+
+        //只发一次删除请求，来完成一个批量删除
+        List<AttrAttrgroupRelationEntity> entities = Arrays.asList(vos).stream().map((item) -> {
+            AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
+            //进行属性对拷：将当前正在遍历的item里面的属性值复制到relationEntity
+            BeanUtils.copyProperties(item, relationEntity);
+            return relationEntity;
+        }).collect(Collectors.toList());//将其收集成一个ArrayList集合
+        relationDao.deleteBatchRelation(entities);
     }
 }
