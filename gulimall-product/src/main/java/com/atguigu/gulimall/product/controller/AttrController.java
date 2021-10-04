@@ -30,11 +30,13 @@ public class AttrController {
     ///product/attr/info/{attrId}
 
     //product/attr/base/list/{catelogId}
-    @GetMapping("/base/list/{catelogId}")
+    //product/attr/sale/list/{catelogId}
+    @GetMapping("/{attrType}/list/{catelogId}")
     public R baseAttrList(@RequestParam Map<String, Object> params,
-                          @PathVariable("catelogId") long catelogId) {
+                          @PathVariable("catelogId") long catelogId,
+                          @PathVariable("attrType") String type) {
         //params:分页的条件，catelogId三级分类的id
-        PageUtils page = attrService.queryBaseAttrPage(params, catelogId);
+        PageUtils page = attrService.queryBaseAttrPage(params, catelogId, type);
         return R.ok().put("page", page);
     }
 
