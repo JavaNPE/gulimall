@@ -195,6 +195,9 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
             return attr.getAttrId();
         }).collect(Collectors.toList());//最终把attrId收集成一个集合
 
+        if (attrIds == null || attrIds.size() == 0) {
+            return null;
+        }
         Collection<AttrEntity> attrEntities = this.listByIds(attrIds);   //按照属性的id集合查出所有的属性信息
         return (List<AttrEntity>) attrEntities;
     }
@@ -218,4 +221,71 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         }).collect(Collectors.toList());//将其收集成一个ArrayList集合
         relationDao.deleteBatchRelation(entities);
     }
+
+    /**
+     * 获取当前分组没有关联的所有属性
+     *
+     * @param params
+     * @param attrgroupId
+     * @return
+     */
+    @Override
+    public PageUtils getNoRelationAttr(Map<String, Object> params, Long attrgroupId) {
+        //1、当前分组只能关联自己所属的分类里面的所有属性
+        AttrGroupEntity attrGroupEntity = attrGroupDao.selectById(attrgroupId);     //查出当前分组的信息
+        Long catelogId = attrGroupEntity.getCatelogId();    //获取当前分类的id （本分组的三级分类id）
+
+        //2、当前分组只能关联别的分组没有引用的属性
+        //2.1 找到当前分类下的其他分组
+        List<AttrGroupEntity> group = attrGroupDao.selectList(new QueryWrapper<AttrGroupEntity>().eq("catelog_id", catelogId));
+        List<Long> collect = group.stream().map((item -> {
+            return item.getAttrGroupId();
+        })).collect(Collectors.toList());  //将attrGroupId收集成一个集合
+
+        //2.2 在找到这些分组关联的属性
+        List<AttrAttrgroupRelationEntity> groupId = relationDao.selectList(new QueryWrapper<AttrAttrgroupRelationEntity>().in("attr_group_id", collect));
+        List<Long> attrIds = groupId.stream().map(item -> {
+            //获取到已经关联了的所有属性的id
+            return item.getAttrId();
+        }).collect(Collectors.toList());    //将attrId收集成一个集合
+
+        //2.3 从当前分类的所有属性中移除这些属性，得到我们没有关联的属性
+        //用当前这个service自己的dao：AttrDao   也可以通过this.获取     catelog_id：属性的三级分类必须是本分组下的三级分类id,而且attr_id不能再这个集合里面
+//        List<AttrEntity> attrEntities = this.baseMapper.selectList(new QueryWrapper<AttrEntity>().eq("catelog_id", catelogId).notIn("attr_id", attrIds));
+        QueryWrapper<AttrEntity> wrapper = new QueryWrapper<AttrEntity>().eq("catelog_id", catelogId).eq("attr_type", ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode());
+        if (attrIds != null && attrIds.size() > 0) {
+            wrapper.notIn("attr_id", attrIds);
+        }
+        //拿到模糊查询条件
+        String key = (String) params.get("key");
+        if (!StringUtils.isEmpty(key)) {
+            wrapper.and((w) -> {
+                w.eq("attr_id", key).or().like("attr_name", key);
+            });
+        }
+        IPage<AttrEntity> page = this.page(new Query<AttrEntity>().getPage(params), wrapper);
+        PageUtils pageUtils = new PageUtils(page);
+        return pageUtils;
+    }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

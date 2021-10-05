@@ -38,11 +38,32 @@ public class AttrGroupController {
     @Autowired
     AttrService attrService;
 
-    //product/attrgroup/{attrgroupId}/attr/relation    谷粒商城接口文档：10、获取属性分组的关联的所有属性
+    /**
+     * 谷粒商城接口文档：10、获取属性分组的关联的所有属性
+     *
+     * @param attrgroupId
+     * @return
+     */
+    //product/attrgroup/{attrgroupId}/attr/relation
     @GetMapping("/{attrgroupId}/attr/relation")
     public R attrRelation(@PathVariable("attrgroupId") Long attrgroupId) {
         List<AttrEntity> entities = attrService.getRelationAttr(attrgroupId);
         return R.ok().put("data", entities);
+    }
+
+    /**
+     * 谷粒商城接口文档：13、获取属性分组没有关联的其他属性
+     *
+     * @param attrgroupId
+     * @return
+     */
+    //product/attrgroup/{attrgroupId}/noattr/relation
+    @GetMapping("/{attrgroupId}/noattr/relation")
+    public R attrNoRelation(@PathVariable("attrgroupId") Long attrgroupId,
+                            @RequestParam Map<String, Object> params) { //params是页面带来的分页参数
+        PageUtils page = attrService.getNoRelationAttr(params, attrgroupId);
+//        return R.ok().put("data", page);    //将分页数据page返回 （前端没反应，一直转圈圈）
+        return R.ok().put("page", page);    //将分页数据page返回  注意此处 与雷丰阳老师的返回的字段不一致 （本例改成page正常）
     }
 
     //product/attrgroup/attr/relation/delete  : 删除属性与分组的关联关系
