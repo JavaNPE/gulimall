@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.atguigu.gulimall.product.entity.AttrEntity;
+import com.atguigu.gulimall.product.service.AttrAttrgroupRelationService;
 import com.atguigu.gulimall.product.service.AttrService;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.AttrGroupRelationVo;
@@ -37,6 +38,23 @@ public class AttrGroupController {
 
     @Autowired
     AttrService attrService;
+
+
+    @Autowired
+    AttrAttrgroupRelationService relationService;
+
+    /**
+     * 11、添加属性与分组关联关系
+     *
+     * @return
+     */
+    //product/attrgroup/attr/relation
+    @PostMapping("/attr/relation")
+    public R addRelation(@RequestBody List<AttrGroupRelationVo> vos) {
+
+        relationService.saveBatch(vos); //批量保存
+        return R.ok();
+    }
 
     /**
      * 谷粒商城接口文档：10、获取属性分组的关联的所有属性
