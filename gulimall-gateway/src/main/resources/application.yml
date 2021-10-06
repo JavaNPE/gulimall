@@ -28,6 +28,13 @@ spring:
           filters:
             - RewritePath=/api/thirdparty/(?<segment>/?.*),/$\{segment}
 
+        - id: member_route
+          uri: lb://gulimall-member
+          predicates:
+            - Path=/api/member/**     #只要是/api/member 这些前缀的 就自动路由给第三方服务gulimall-third-party
+          filters:
+            - RewritePath=/api/(?<segment>/?.*),/$\{segment}
+
         ## 是模糊路由
         - id: admin_route
           uri: lb://renren-fast # 路由给renren-fast
