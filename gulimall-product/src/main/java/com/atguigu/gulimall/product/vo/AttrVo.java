@@ -53,4 +53,6 @@ public class AttrVo {
      * 分组的id
      */
     private Long attrGroupId;
+
+    private Integer valueType;
 }

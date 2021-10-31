@@ -63,6 +63,6 @@ public class AttrEntity implements Serializable {
 	/**
 	 *
 	 */
-	//private Integer valueType;
+	private Integer valueType;
 
 }
