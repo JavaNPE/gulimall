@@ -162,7 +162,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
     @Override
     public void updateAttr(AttrVo attr) {
         AttrEntity attrEntity = new AttrEntity();
-        BeanUtils.copyProperties(attr, attrEntity);
+        BeanUtils.copyProperties(attr, attrEntity);     //将attr里面的数据拷贝到attrEntity中
         this.updateById(attrEntity);
 
         if (attrEntity.getAttrType() == ProductConstant.AttrEnum.ATTR_TYPE_BASE.getCode()) {
@@ -212,7 +212,7 @@ public class AttrServiceImpl extends ServiceImpl<AttrDao, AttrEntity> implements
         //AttrGroupRelationVo[]是一个集合 如果我们选择了批量删除提交了很多数据，就会发送很多次删除请求；而我们希望只发送一次删除请求，也就不能这么写了
         //relationDao.delete(new QueryWrapper<>().eq("attr_id",1L).eq("attr_group_id",1L))
 
-        //只发一次删除请求，来完成一个批量删除
+        //只发一次删除请求，来完成一个批量删除    Arrays.asList(vos)将vos数组转换为 List
         List<AttrAttrgroupRelationEntity> entities = Arrays.asList(vos).stream().map((item) -> {
             AttrAttrgroupRelationEntity relationEntity = new AttrAttrgroupRelationEntity();
             //进行属性对拷：将当前正在遍历的item里面的属性值复制到relationEntity

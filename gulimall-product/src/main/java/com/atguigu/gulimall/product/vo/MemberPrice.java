@@ -1,7 +1,11 @@
 /**
-  * Copyright 2021 json.cn 
-  */
+ * Copyright 2021 json.cn
+ */
 package com.atguigu.gulimall.product.vo;
+
+import lombok.Data;
+
+import java.math.BigDecimal;
 
 /**
  * Auto-generated: 2021-10-31 11:44:1
@@ -9,30 +13,9 @@ package com.atguigu.gulimall.product.vo;
  * @author json.cn (i@json.cn)
  * @website http://www.json.cn/java2pojo/
  */
+@Data
 public class MemberPrice {
-
-    private int id;
+    private Long id;
     private String name;
-    private int price;
-    public void setId(int id) {
-         this.id = id;
-     }
-     public int getId() {
-         return id;
-     }
-
-    public void setName(String name) {
-         this.name = name;
-     }
-     public String getName() {
-         return name;
-     }
-
-    public void setPrice(int price) {
-         this.price = price;
-     }
-     public int getPrice() {
-         return price;
-     }
-
+    private BigDecimal price;
 }
