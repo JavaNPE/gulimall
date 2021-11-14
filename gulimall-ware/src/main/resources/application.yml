@@ -8,7 +8,14 @@ spring:
     password: root
     url: jdbc:mysql://192.168.56.10:3306/gulimall_wms
     driver-class-name: com.mysql.jdbc.Driver
-
+# 将该服务注册到nacos中
+  cloud:
+    nacos:
+      discovery:
+        server-addr: 127.0.0.1:8848
+# 指定项目的名字
+  application:
+    name: gulimall-ware
 # MapperScan
 # sql映射文件位置
 mybatis-plus:
