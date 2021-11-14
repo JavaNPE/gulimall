@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -57,16 +58,23 @@ public class SkuFullReductionServiceImpl extends ServiceImpl<SkuFullReductionDao
         skuLadderEntity.setFullCount(reductionTo.getFullCount());
         skuLadderEntity.setDiscount(reductionTo.getDiscount());
         skuLadderEntity.setAddOther(reductionTo.getCountStatus());
-        skuLadderService.save(skuLadderEntity);
+
+        //如果实际打折大于0，意思就是有实际打折的情况，我们就保存
+        if (reductionTo.getFullCount() > 0) {
+            skuLadderService.save(skuLadderEntity);
+        }
 
         //2、sms_sku_full_reduction：满减信息
         SkuFullReductionEntity reductionEntity = new SkuFullReductionEntity();
         //属性对拷
         BeanUtils.copyProperties(reductionTo, reductionEntity);
-        /**
-         * 如果是SkuFullReductionService(自己本身的Service)的话我们就不需要再次注入了，直接通过this.调用即可
-         */
-        this.save(reductionEntity);
+        //fullPrice与0比较 如果返回==1,则表示fullPrice的值大于0，意思就是有实际的满减信息
+        if (reductionEntity.getFullPrice().compareTo(new BigDecimal("0")) == 1) {
+            /**
+             * 如果是SkuFullReductionService(自己本身的Service)的话我们就不需要再次注入了，直接通过this.调用即可
+             */
+            this.save(reductionEntity);
+        }
 
         //3、会员价格
         List<MemberPrice> memberPrice = reductionTo.getMemberPrice();
@@ -82,6 +90,8 @@ public class SkuFullReductionServiceImpl extends ServiceImpl<SkuFullReductionDao
             priceEntity.setMemberPrice(item.getPrice());
             priceEntity.setAddOther(1);
             return priceEntity;
+        }).filter(item -> {   //memberPrice的值与0比较 如果返回1则表示memberPrice的值比0大
+            return item.getMemberPrice().compareTo(new BigDecimal("0")) == 1;
         }).collect(Collectors.toList());
 
         memberPriceService.saveBatch(collect);
