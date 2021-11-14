@@ -24,3 +24,7 @@ mybatis-plus:
   global-config:
     db-config:
       id-type: auto
+#idea控制台打印SQL语句
+logging:
+  level:
+    com.atguigu: debug
