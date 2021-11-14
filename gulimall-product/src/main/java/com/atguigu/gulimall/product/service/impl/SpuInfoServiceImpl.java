@@ -13,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.security.Key;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -219,6 +220,44 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
     @Override
     public void saveBaseSpuInfo(SpuInfoEntity infoEntity) {
         this.baseMapper.insert(infoEntity);
+    }
+
+    @Override
+    public PageUtils queryPageByCondition(Map<String, Object> params) {
+        QueryWrapper<SpuInfoEntity> wrapper = new QueryWrapper<>();
+
+        String key = (String) params.get("key");
+        if (!StringUtils.isEmpty(key)) {
+            wrapper.and((w) -> {
+                w.eq("id", key).or().like("spu_name", key);
+            });
+        }
+        // status=1 and (id=1 or spu_name like xxx),因为上面用了and()的方式拼接，拼接的条件在and()括号里面。
+        // 若是使用and()进行拼接的话statuse x=1 and id=1 or spu_name like xxx 会有恒成立的问题
+        String status = (String) params.get("status");
+        if (!StringUtils.isEmpty(status)) {
+            wrapper.eq("publish_status", status);
+        }
+        String brandId = (String) params.get("brandId");
+        if (!StringUtils.isEmpty(brandId)) {
+            wrapper.eq("brand_id", brandId);
+        }
+        String catelogId = (String) params.get("catelogId");
+        if (!StringUtils.isEmpty(key)) {
+            wrapper.eq("catalog_id", catelogId);
+        }
+        /**
+         * status: 1
+         * key:
+         * brandId: 2
+         * catelogId: 225
+         */
+        IPage<SpuInfoEntity> page = this.page(
+                new Query<SpuInfoEntity>().getPage(params),
+                wrapper
+        );
+
+        return new PageUtils(page);
     }
 
 
