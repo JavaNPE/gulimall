@@ -56,6 +56,8 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
         if (!StringUtils.isEmpty(key)) {
             // sku_id=1 and (sku_id=1 or sku_name like xxx),因为上面用了and()的方式拼接，拼接的条件在and()括号里面。
             // 若是使用and()进行拼接的话catelog_id x=1 and sku_id=1 or sku_name like xxx 会有恒成立的问题
+            //==>  Preparing: SELECT * FROM pms_sku_info WHERE (catalog_id = ? AND brand_id = ? AND price >= ? AND price <= ?) LIMIT ?,?
+            //==>  Preparing: SELECT * FROM pms_sku_info WHERE (( (sku_id = ? OR sku_name LIKE ?) ) AND catalog_id = ? AND brand_id = ? AND price >= ? AND price <= ?) LIMIT ?,?
             queryWrapper.and((wapper) -> {
                 wapper.eq("sku_id", key).or().like("sku_name", key);
             });
@@ -86,15 +88,12 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
             } catch (Exception e) {
 
             }
-
         }
 
         IPage<SkuInfoEntity> page = this.page(
                 new Query<SkuInfoEntity>().getPage(params),
                 queryWrapper
         );
-
         return new PageUtils(page);
     }
-
 }
