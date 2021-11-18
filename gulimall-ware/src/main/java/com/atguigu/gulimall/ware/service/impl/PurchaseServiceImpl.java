@@ -4,6 +4,7 @@ import com.atguigu.common.constant.WareConstant;
 import com.atguigu.gulimall.ware.MergeVo;
 import com.atguigu.gulimall.ware.entity.PurchaseDetailEntity;
 import com.atguigu.gulimall.ware.service.PurchaseDetailService;
+import org.apache.commons.lang.math.IEEE754rUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -64,6 +65,7 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
             this.save(purchaseEntity);
             purchaseId = purchaseEntity.getId();
         }
+        //TODO 确认采购单状态是0，1才可以合并
         List<Long> items = mergeVo.getItems();
         Long finalPurchaseId = purchaseId;
 
@@ -83,6 +85,44 @@ public class PurchaseServiceImpl extends ServiceImpl<PurchaseDao, PurchaseEntity
         purchaseEntity.setId(purchaseId);
         purchaseEntity.setCreateTime(new Date());
         this.updateById(purchaseEntity);
+    }
+
+    /**
+     * @param ids 采购单id
+     */
+    @Override
+    public void received(List<Long> ids) {
+        //1、确认当前采购单是新建或者已分配状态
+        List<PurchaseEntity> collect = ids.stream().map(id -> {
+            //通过id查询采购信息
+            PurchaseEntity byId = this.getById(id);
+            return byId;
+        }).filter(item -> {
+            if (item.getStatus() == WareConstant.PurchaseStatusEnum.CREATED.getCode() ||
+                    item.getStatus() == WareConstant.PurchaseStatusEnum.ASSIGNED.getCode()) {
+                return true;
+            }
+            return false;
+        }).map(item -> {
+            item.setStatus(WareConstant.PurchaseStatusEnum.RECEIVE.getCode());
+            item.setUpdateTime(new Date());
+            return item;
+        }).collect(Collectors.toList());
+        //2、改变采购单的状态
+        this.updateBatchById(collect);
+
+        //3、改变采购项的状态
+        collect.forEach((item) -> {
+            List<PurchaseDetailEntity> entities = detailService.listDetailByPurchaseId(item.getId());
+
+            List<PurchaseDetailEntity> detailEntities = entities.stream().map(entity -> {
+                PurchaseDetailEntity entity1 = new PurchaseDetailEntity();
+                entity1.setId(entity.getId());
+                entity1.setStatus(WareConstant.PurchaseDetailStatusEnum.BUYING.getCode());
+                return entity1;
+            }).collect(Collectors.toList());
+            detailService.updateBatchById(detailEntities);
+        });
     }
 
 }

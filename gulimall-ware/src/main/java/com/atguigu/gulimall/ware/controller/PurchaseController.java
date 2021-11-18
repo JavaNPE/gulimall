@@ -2,6 +2,7 @@ package com.atguigu.gulimall.ware.controller;
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 import com.atguigu.gulimall.ware.MergeVo;
@@ -27,7 +28,24 @@ public class PurchaseController {
     @Autowired
     private PurchaseService purchaseService;
 
-    //04、合并采购需求：ware/purchase/merge
+    /**
+     * 06、领取采购单: /ware/purchase/received
+     *
+     * @param ids
+     * @return
+     */
+    @PostMapping("/received")
+    public R received(@RequestBody List<Long> ids) {
+        purchaseService.received(ids);
+        return R.ok();
+    }
+
+    /**
+     * 04、合并采购需求：ware/purchase/merge
+     *
+     * @param mergeVo
+     * @return
+     */
     @PostMapping("/merge")
     public R merge(@RequestBody MergeVo mergeVo) {
         purchaseService.mergePurchase(mergeVo);
