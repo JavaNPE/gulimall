@@ -38,6 +38,7 @@ public class ProductAttrValueServiceImpl extends ServiceImpl<ProductAttrValueDao
 
     @Override
     public List<ProductAttrValueEntity> baseAttrlistforspu(Long spuId) {
+        //SELECT id,attr_id,spu_id,attr_sort,attr_value,quick_show,attr_name FROM pms_product_attr_value WHERE (spu_id = ?)
         List<ProductAttrValueEntity> entities = this.baseMapper.selectList(new QueryWrapper<ProductAttrValueEntity>().eq("spu_id", spuId));
         return entities;
     }
