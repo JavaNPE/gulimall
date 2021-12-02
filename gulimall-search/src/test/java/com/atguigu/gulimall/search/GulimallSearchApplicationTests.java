@@ -6,9 +6,13 @@ import com.atguigu.gulimall.search.config.GulimallElasticSearchConfig;
 import lombok.Data;
 import org.elasticsearch.action.index.IndexRequest;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchRequest;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.common.xcontent.XContent;
 import org.elasticsearch.common.xcontent.XContentType;
+import org.elasticsearch.index.query.QueryBuilders;
+import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +26,30 @@ import java.io.IOException;
 public class GulimallSearchApplicationTests {
     @Autowired
     private RestHighLevelClient client;
+
+
+    @Test
+    public void searchData() throws IOException {
+        // 1 创建检索请求
+        SearchRequest searchRequest = new SearchRequest();
+        searchRequest.indices("bank");
+        SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+        // 构造检索条件
+//        sourceBuilder.query();
+//        sourceBuilder.from();
+//        sourceBuilder.size();
+//        sourceBuilder.aggregation();
+        sourceBuilder.query(QueryBuilders.matchQuery("address", "mill"));
+        System.out.println(sourceBuilder.toString());
+
+        searchRequest.source(sourceBuilder);
+
+        // 2 执行检索
+        SearchResponse response = client.search(searchRequest, GulimallElasticSearchConfig.COMMON_OPTIONS);
+        // 3 分析响应结果
+        System.out.println(response.toString());
+    }
+
 
     /**
      * 测试存储数据到ES
