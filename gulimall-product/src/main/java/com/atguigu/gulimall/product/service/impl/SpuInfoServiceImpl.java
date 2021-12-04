@@ -2,11 +2,13 @@ package com.atguigu.gulimall.product.service.impl;
 
 import com.atguigu.common.to.SkuReductionTo;
 import com.atguigu.common.to.SpuBoundTo;
+import com.atguigu.common.to.es.SkuEsModel;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.product.entity.*;
 import com.atguigu.gulimall.product.feign.CouponFeignService;
 import com.atguigu.gulimall.product.service.*;
 import com.atguigu.gulimall.product.vo.*;
+import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.security.Key;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +61,18 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
      */
     @Autowired
     CouponFeignService couponFeignService;
+
+    /**
+     * 为了远程调用品牌服务，查询相应的品牌名称等信息
+     */
+    @Autowired
+    BrandService brandService;
+
+    /**
+     * 为了远程调用商品分类服务，查询相应的分类名称等信息
+     */
+    @Autowired
+    CategoryService categoryService;
 
     @Override
     public PageUtils queryPage(Map<String, Object> params) {
@@ -258,6 +273,59 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         );
 
         return new PageUtils(page);
+    }
+
+    @Override
+    public void up(Long spuId) {
+        //1、查出当前spuId对应的所有sku信息，品牌的名字。
+        List<SkuInfoEntity> skus = skuInfoService.getSkusBySpuId(spuId);
+
+        //TODO 4、查询当前sku的所有可以被用来检索（search_type：0否，1是）的规格属性。
+
+        //2、封装每个sku的信息
+        List<SkuEsModel> upProducts = skus.stream().map(sku -> {
+            //组装需要的数据
+            SkuEsModel esModel = new SkuEsModel();
+            /**
+             * 将当前正在遍历的sku里面的数据，拷贝到esModel中
+             */
+            BeanUtils.copyProperties(sku, esModel);
+
+
+            //对比SkuInfoEntity和SkuEsModel中的字段发现：skuPrice,skuImg,hasStock,hotScore等有些字段名称不一样，或者压根就没有以下字段，需要我们单独处理（查询）
+            esModel.setSkuPrice(sku.getPrice());
+            esModel.setSkuImg(sku.getSkuDefaultImg());
+            //hasStock,hotScore
+            //TODO 1、发送远程调用，库存系统查询是否含有库存（hasStock）
+
+            //TODO 2、热度评分。新产品默认置：0
+
+            //TODO 3、查询品牌（brandName）和分类的名字(catalogName)信息。
+            BrandEntity brand = brandService.getById(esModel.getBrandId());
+            esModel.setBrandName(brand.getName());
+            esModel.setBrandImg(brand.getLogo());
+
+            CategoryEntity category = categoryService.getById(esModel.getCatalogId());
+            esModel.setCatalogName(category.getName());
+
+
+            /**
+             *  private String brandName;
+             *  private String brandImg;
+             *  private String catalogName;
+             *  private List<Attr> attrs;
+             *
+             *@Data
+             *public static class Attr {
+             *      private Long attrId;
+             *      private String attrName;
+             *      private String attrValue;
+             *}
+             */
+            return esModel;
+        }).collect(Collectors.toList());
+
+        //TODO 5、将数据发给es进行保存：gulimall-search
     }
 
 
