@@ -1,5 +1,6 @@
 package com.atguigu.common.to.es;
 
+import jdk.internal.util.xml.impl.Attrs;
 import lombok.Data;
 
 import java.math.BigDecimal;
@@ -83,10 +84,10 @@ public class SkuEsModel {
     /**
      * 商品规格属性信息
      */
-    private List<Attr> attrs;
+    private List<Attrs> attrs;
 
     @Data
-    public static class Attr{
+    public static class Attrs{
         private Long attrId;
         private String attrName;
         private String attrValue;

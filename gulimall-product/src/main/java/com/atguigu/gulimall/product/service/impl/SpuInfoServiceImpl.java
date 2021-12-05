@@ -8,6 +8,7 @@ import com.atguigu.gulimall.product.entity.*;
 import com.atguigu.gulimall.product.feign.CouponFeignService;
 import com.atguigu.gulimall.product.service.*;
 import com.atguigu.gulimall.product.vo.*;
+import jdk.internal.util.xml.impl.Attrs;
 import lombok.Data;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.BeanUtils;
@@ -16,10 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.security.Key;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -281,6 +279,23 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         List<SkuInfoEntity> skus = skuInfoService.getSkusBySpuId(spuId);
 
         //TODO 4、查询当前sku的所有可以被用来检索（search_type：0否，1是）的规格属性。
+        List<ProductAttrValueEntity> baseAttrs = attrValueService.baseAttrlistforspu(spuId);
+        List<Long> attrIds = baseAttrs.stream().map(attr -> {
+            return attr.getAttrId();
+        }).collect(Collectors.toList());
+
+        List<Long> searchAttrIds = attrService.selectSearchAttrIds(attrIds);
+        //将List转成Set:无序不可重复
+        Set<Long> idSet = new HashSet<>(searchAttrIds);
+
+//        List<SkuEsModel.Attrs> attrs = new ArrayList<>();
+        List<SkuEsModel.Attrs> attrsList = baseAttrs.stream().filter(item -> {
+            return idSet.contains(item.getAttrId());
+        }).map(item -> {
+            SkuEsModel.Attrs attrs1 = new SkuEsModel.Attrs();
+            BeanUtils.copyProperties(item, attrs1);
+            return attrs1;
+        }).collect(Collectors.toList());
 
         //2、封装每个sku的信息
         List<SkuEsModel> upProducts = skus.stream().map(sku -> {
@@ -298,8 +313,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
             //hasStock,hotScore
             //TODO 1、发送远程调用，库存系统查询是否含有库存（hasStock）
 
-            //TODO 2、热度评分。新产品默认置：0
-
+            //TODO 2、热度评分(hotScore)。新产品默认置：0 【暂时默认      】
+            esModel.setHotScore(0L);
             //TODO 3、查询品牌（brandName）和分类的名字(catalogName)信息。
             BrandEntity brand = brandService.getById(esModel.getBrandId());
             esModel.setBrandName(brand.getName());
@@ -307,7 +322,8 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
 
             CategoryEntity category = categoryService.getById(esModel.getCatalogId());
             esModel.setCatalogName(category.getName());
-
+            //设置检索属性
+            esModel.setAttrs(attrsList);
 
             /**
              *  private String brandName;
