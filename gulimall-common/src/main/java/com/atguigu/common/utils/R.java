@@ -8,8 +8,11 @@
 
 package com.atguigu.common.utils;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import org.apache.http.HttpStatus;
 
+import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,17 +21,36 @@ import java.util.Map;
  *
  * @author Mark sunlightcs@gmail.com
  */
-public class R<T> extends HashMap<String, Object> {
+public class R extends HashMap<String, Object> {
     private static final long serialVersionUID = 1L;
 
-    private T data;
+//    private T data;
+//
+//    public T getData() {
+//        return data;
+//    }
+//
+//    public void setData(T data) {
+//        this.data = data;
+//    }
 
-    public T getData() {
-        return data;
+    /**
+     * 利用alibaba提供的fastjson进行类型转换
+     *
+     * @param typeReference
+     * @param <T>
+     * @return
+     */
+    public <T> T getData(TypeReference<T> typeReference) {
+        Object data = get("data");  //此处get("data")默认是map类型
+        String s = JSON.toJSONString(data);    //将Object转成String
+        T t = JSON.parseObject(s, typeReference);     //将文本String逆转成T类型
+        return t;
     }
 
-    public void setData(T data) {
-        this.data = data;
+    public R setData(Object data) {
+        put("data", data);
+        return this;
     }
 
     public R() {

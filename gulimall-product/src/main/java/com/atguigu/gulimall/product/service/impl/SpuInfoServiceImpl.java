@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.TypeReference;
 import com.atguigu.common.constant.ProductConstant;
 import com.atguigu.common.to.SkuHasStockVo;
 import com.atguigu.common.to.SkuReductionTo;
@@ -315,11 +316,12 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         try {
             //因为是远程调用，会存在网络等问题导致远程调用失败，我们需要使用try进行捕获
 
-            R<List<SkuHasStockVo>> skusHashStock = wareFeignService.getSkusHashStock(skuIdList);
+            R skusHashStock = wareFeignService.getSkusHashStock(skuIdList);
 //        List<SkuHasStockVo> data = skusHashStock.getData();
-
+            TypeReference<List<SkuHasStockVo>> typeReference = new TypeReference<List<SkuHasStockVo>>() {
+            };
             //将List转成Map（重要）
-            stockMap = skusHashStock.getData().stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getHasStock()));
+            stockMap = skusHashStock.getData(typeReference).stream().collect(Collectors.toMap(SkuHasStockVo::getSkuId, item -> item.getHasStock()));
 
         } catch (Exception e) {
             log.error("库存服务查询异常：原因{}", e);
@@ -378,7 +380,7 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         if (r.getCode() == 0) {
             //远程调用成功
             //TODO 6、修改当前spu状态
-            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.NEW_SPU.getCode());
+            baseMapper.updateSpuStatus(spuId, ProductConstant.StatusEnum.SPU_UP.getCode());
         } else {
             //远程调用失败
             //TODO 7、重复调用？？ 接口幂等性：重试机制？？？（重要！！！）

@@ -34,15 +34,17 @@ public class WareSkuController {
      * @RequestBody: 将请求体中的json数据转成List<Long>集合
      */
     @PostMapping("/hasstock")
-    public R<List<SkuHasStockVo>> getSkusHashStock(@RequestBody List<Long> skuIds) {
+    public R getSkusHashStock(@RequestBody List<Long> skuIds) {
+//    public R<List<SkuHasStockVo>> getSkusHashStock(@RequestBody List<Long> skuIds) {
 
         //表：wms_ware_sku 只需要返回当前sku_id和当前的库存量stock只要大于0就是有库存
         List<SkuHasStockVo> vos = wareSkuService.getSkusHashStock(skuIds);
 
-        R<List<SkuHasStockVo>> ok = R.ok();
-        ok.setData(vos);
+
+        /*R<List<SkuHasStockVo>> ok = R.ok();
+        ok.setData(vos);*/
         //return R.ok().put("data", vos);
-        return ok;
+        return R.ok().setData(vos);
     }
 
     /**
