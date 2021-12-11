@@ -382,6 +382,22 @@ public class SpuInfoServiceImpl extends ServiceImpl<SpuInfoDao, SpuInfoEntity> i
         } else {
             //远程调用失败
             //TODO 7、重复调用？？ 接口幂等性：重试机制？？？（重要！！！）
+            //Feign流程调用（含与那么解析）：https://www.bilibili.com/video/BV1np4y1C7Yf?p=134&spm_id_from=pageDriver
+            /**
+             * 1、构造请求数据，将对象转成json：
+             *          RequestTemplate template = bui LdTemplateFromArgs. create (argv);
+             * 2、发送请求进行执行(执行成功会解码响应数据)：
+             *          executeAndDecode ( template);
+             * 3、执行请求会有重试机制
+             *      while(true){
+             *      	try{
+             *      		executeAndDecode(template);
+             *             }catch {
+             *      		try{retryer.continueOrPropagate(e);}catch() {throw es;}
+             *                  continue;
+             *         }
+             *      }
+             */
         }
     }
 
