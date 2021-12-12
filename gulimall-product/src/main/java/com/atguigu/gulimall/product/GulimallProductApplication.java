@@ -57,6 +57,9 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *      2)、静态资源都放在static文件夹下就可以按照路径直接访问
  *      3)、页面放在templates下，直接访问
  *              SpringBoot,访问项目的时候，默认会找index
+ *      4)、如果页面修改之后不想重启服务器，而且还要实时更新页面内容怎么办？
+ *          1、引入dev-tools
+ *          2)、修改元贝面controller shift f9重新自动编详下贝面，如果是代码配置，还是推荐重启服务
  */
 @EnableFeignClients(basePackages = "com.atguigu.gulimall.product.feign")
 @EnableDiscoveryClient
