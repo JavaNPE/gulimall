@@ -51,6 +51,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *    @Constraint(validatedBy = {ListValueConstraintValidator.class})【可以指定多个不同的校验器，适配不同类型的校验】
  *    @Target({METHOD, FIELD, ANNOTATION_TYPE, CONSTRUCTOR, PARAMETER, TYPE_USE})
  *    @Retention(RUNTIME)
+ *
+ * 5、模板引擎
+ *      1)、thymeleaf-starter:关闭缓存（为了能够实时显示数据）
+ *      2)、静态资源都放在static文件夹下就可以按照路径直接访问
+ *      3)、页面放在templates下，直接访问
+ *              SpringBoot,访问项目的时候，默认会找index
  */
 @EnableFeignClients(basePackages = "com.atguigu.gulimall.product.feign")
 @EnableDiscoveryClient
