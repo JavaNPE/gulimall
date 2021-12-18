@@ -50,6 +50,13 @@ spring:
           filters:
             - RewritePath=/api/(?<segment>.*),/renren-fast/$\{segment}  # 把/api/* 改变成 /renren-fast/*
 
+          # 只要是gulimall.com域名下的所有请求，我们都转给gulimall-product微服务,PS一样要放在最后面
+        - id: gulimall_host_route
+          uri: lb://gulimall-product
+          predicates:
+            - Host=**.gulimall.com,gulimall.com
+
+
 ## 前端项目，统一加上  /api 统一标识符
 ## http://localhost:88/api/captcha.jpg    实际获取到的验证码请求地址：http://localhost:8080/renren-fast/captcha.ipg
 ## http://localhost:88/api/product/category/list/tree不存在（请求发送的是这个，但是不是我们需要的）,只有通过http://localhost:10000/product/category/list/tree路径才能够正常访问
