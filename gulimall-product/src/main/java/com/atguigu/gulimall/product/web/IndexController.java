@@ -22,40 +22,46 @@ import java.util.Map;
 @Controller
 public class IndexController {
 
-    @Autowired
-    CategoryService categoryService;
+	@Autowired
+	CategoryService categoryService;
 
-    /**
-     * 无论我们是访问：
-     * <p>
-     * [http://localhost:10000/]
-     * 还是
-     * [http://localhost:10000/index.html（暂时不显示，需要我们做映射）]
-     * 都可以访问我们的首页
-     *
-     * @return
-     */
-    @GetMapping({"/", "/index.html"})
-    public String indexPage(Model model) {
+	/**
+	 * 无论我们是访问：
+	 * <p>
+	 * [http://localhost:10000/]
+	 * 还是
+	 * [http://localhost:10000/index.html（暂时不显示，需要我们做映射）]
+	 * 都可以访问我们的首页
+	 *
+	 * @return
+	 */
+	@GetMapping({"/", "/index.html"})
+	public String indexPage(Model model) {
 
-        //TODO 1、查出所有的一级分类
-        List<CategoryEntity> categoryEntities = categoryService.getLevel1Categorys();
+		//TODO 1、查出所有的一级分类
+		List<CategoryEntity> categoryEntities = categoryService.getLevel1Categorys();
 
-        // 视图解析器进行拼串
-        // 源码中含有默认后缀：classpath:/templates/
-        // 源码中含有默认后缀：.html    然后进行拼串
+		// 视图解析器进行拼串
+		// 源码中含有默认后缀：classpath:/templates/
+		// 源码中含有默认后缀：.html    然后进行拼串
 
-        model.addAttribute("categorys", categoryEntities);
-        return "index";         //所以我们只需返回一个index即可
-    }
+		model.addAttribute("categorys", categoryEntities);
+		return "index";         //所以我们只需返回一个index即可
+	}
 
-    //index/catalog.json   , Map是一个JSON对象？
-    @ResponseBody
-    @GetMapping("/index/catalog.json")
-    public Map<String, List<Catelog2Vo>> getCatalogJson() {
+	//index/catalog.json   , Map是一个JSON对象？
+	@ResponseBody
+	@GetMapping("/index/catalog.json")
+	public Map<String, List<Catelog2Vo>> getCatalogJson() {
 
-        //查出所有的分类
-        Map<String, List<Catelog2Vo>> catalogJson = categoryService.getCatalogJson();
-        return catalogJson;
-    }
+		//查出所有的分类
+		Map<String, List<Catelog2Vo>> catalogJson = categoryService.getCatalogJson();
+		return catalogJson;
+	}
+
+	@ResponseBody
+	@GetMapping("/hello")
+	public String hello() {
+		return "hello";
+	}
 }
