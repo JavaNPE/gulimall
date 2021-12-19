@@ -13,11 +13,11 @@ spring:
           predicates:
             - Query=url,jd
 
-        ##将精确的路由规则放置到模糊的路由规则的前面--- Path=/api/product/**是精确路由
+        ##将精确的路由规则放置到模糊的路由规则的前面--- Path=/api/product/**是精确路由,压测/hello简单服务
         - id: product_route
           uri: lb://gulimall-product # 注册中心的服务
           predicates:
-            - Path=/api/product/**
+            - Path=/api/product/**,/hello
           filters:
             - RewritePath=/api/(?<segment>/?.*),/$\{segment}
 
