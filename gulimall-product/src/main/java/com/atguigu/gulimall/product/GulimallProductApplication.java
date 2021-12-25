@@ -60,6 +60,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *      4)、如果页面修改之后不想重启服务器，而且还要实时更新页面内容怎么办？
  *          1、引入dev-tools
  *          2)、修改元贝面controller shift f9重新自动编详下贝面，如果是代码配置，还是推荐重启服务
+ *
+ * 6、整合redis
+ *      1)、引入data-redis-starter
+ *      2)、简单配置redis的host等信息
+ *      3)、使用SpringBoot自动配置好的StringRedisTemplate来操作redis
+ *      redis-》(简单理解为一个map)Map;存放数据key,数据值value
  */
 @EnableFeignClients(basePackages = "com.atguigu.gulimall.product.feign")
 @EnableDiscoveryClient

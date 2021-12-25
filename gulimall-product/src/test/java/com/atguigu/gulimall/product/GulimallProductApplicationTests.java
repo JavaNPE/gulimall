@@ -14,6 +14,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.redis.core.StringRedisTemplate;
+import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 import sun.net.www.content.image.png;
 
@@ -22,27 +24,47 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 @Slf4j
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class GulimallProductApplicationTests {
-    @Autowired
-    BrandService brandService;
+	@Autowired
+	BrandService brandService;
 
 //    @Autowired
 //    OSSClient ossClient;
 //    OSS ossClient;
 
-    @Autowired
-    CategoryService categoryService;
+	@Autowired
+	CategoryService categoryService;
 
-    @Test
-    public void testFindPath() {
-        Long[] catelogPath = categoryService.findCatelogPath(225L);//225是手机分类的
+	@Autowired
+	StringRedisTemplate stringRedisTemplate;
+
+	/**
+	 * 测试redis
+	 */
+	@Test
+	public void stringRedisTemplate() {
+		//key-> Hello  value-> World
+		ValueOperations<String, String> ops = stringRedisTemplate.opsForValue();
+
+		// 保存数据操作
+		ops.set("Hello", "World" + UUID.randomUUID().toString());
+
+		// 查询操作
+		String hello = ops.get("Hello");
+		System.out.println("之前保存的数据是：" + hello);
+	}
+
+	@Test
+	public void testFindPath() {
+		Long[] catelogPath = categoryService.findCatelogPath(225L);//225是手机分类的
 //        log.info("完整路径：{}", catelogPath);
-        log.info("完整路径：{}", Arrays.asList(catelogPath));
-    }
+		log.info("完整路径：{}", Arrays.asList(catelogPath));
+	}
 
 /*    @Test
     public void testUpload() throws FileNotFoundException {
@@ -68,9 +90,9 @@ public class GulimallProductApplicationTests {
         System.out.println("上传完成...");
     }*/
 
-    @Test
-    public void contextLoads() {
-        BrandEntity brandEntity = new BrandEntity();
+	@Test
+	public void contextLoads() {
+		BrandEntity brandEntity = new BrandEntity();
 //        brandEntity.setBrandId(6L);
 //        brandEntity.setDescript("华为天下第一");
 //        brandService.updateById(brandEntity);
@@ -83,12 +105,12 @@ public class GulimallProductApplicationTests {
         */
 
 
-        List<BrandEntity> list = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
+		List<BrandEntity> list = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
 //        for (BrandEntity entity : list) {
 //            System.out.println(entity);
 //        }
-        list.forEach((item) -> {
-            System.out.println(item);
-        });
-    }
+		list.forEach((item) -> {
+			System.out.println(item);
+		});
+	}
 }

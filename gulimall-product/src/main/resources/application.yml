@@ -16,8 +16,10 @@ spring:
   jackson:
     date-format: yyyy-MM-dd HH:mm:ss
   thymeleaf:
-    cache: false
-
+    cache: true
+  redis:
+    host: 192.168.56.10
+    port: 6379
 # MapperScan
 # sql映射文件位置
 mybatis-plus:
@@ -35,4 +37,4 @@ server:
 #在idea控制台中打印debug日志信息配置
 logging:
   level:
-    com.atguigu.gulimall: debug
+    com.atguigu.gulimall: error
