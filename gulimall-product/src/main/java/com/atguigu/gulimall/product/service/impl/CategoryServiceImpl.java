@@ -133,6 +133,16 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 	/**
 	 * P153、缓存-redis缓存使用-改造三级分类业务
+	 * TODO 上线或进行压力测试的时候 会产生堆外内存溢出：OutOfDirectMemoryError
+	 * 堆外内存溢出产生的原因：
+	 * 		1、springboot2.0以后默认使用lettuce作为操作redis的客户端。它使用netty进行网络通信。
+	 * 		2、lettuce的bug导致netty堆外内存溢出，-Xmx300m; netty如果没有指定堆外内存，它就会默认使用-Xmx300m
+	 * 			可以通过-Dio.netty.maxDirectMemory进行设置
+	 * 解决方案：不能使用-Dio.netty.maxDirectMemory只去调大堆外内存
+	 * 		方案一、升级lettuce
+	 * 		方案二、切换jedis
+	 * redisTemplate与lettuce和jedis之间的关系？
+	 * 		lettuce和jedis是操作redis的底层客户端，spring对他俩再次封装，就成了redisTemplate
 	 *
 	 * @return
 	 */
