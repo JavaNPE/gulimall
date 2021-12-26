@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
@@ -149,7 +150,11 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	@Override
 	public Map<String, List<Catelog2Vo>> getCatalogJson() {
 		// 注意：给缓存中放json字符串，拿出的json字符串，还要逆转为能用的对象类型；【序列号与反序列化】
-
+		/**
+		 * 1、空结果缓存：解决缓存穿透
+		 * 2、设置过期时间（加随机值）： 解决缓存雪崩
+		 * 3、加锁：解决缓存击穿问题（如果锁加不好，又会出现很多问题）
+		 */
 		// 1、加入缓存逻辑  get(key) | 注意：缓存中存的数据是json字符串
 		// JSON的好处：其是跨语言，跨平台兼容
 		String catalogJSON = redisTemplate.opsForValue().get("catalogJSON");
@@ -158,7 +163,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 			Map<String, List<Catelog2Vo>> catalogJsonFromDb = getCatalogJsonFromDb();
 			// 3、将从数据中查到的数据放入到缓存中去，注意：需要将查询出来的对象转成json然后在放在缓存中
 			String s = JSON.toJSONString(catalogJsonFromDb);
-			redisTemplate.opsForValue().set("catalogJSON", s);
+			redisTemplate.opsForValue().set("catalogJSON", s, 1, TimeUnit.DAYS);
 			return catalogJsonFromDb;
 		}
 
