@@ -1,9 +1,11 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.TypeReference;
 import com.atguigu.gulimall.product.service.CategoryBrandRelationService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
-import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -22,6 +24,7 @@ import com.atguigu.gulimall.product.dao.CategoryDao;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 
 @Service("categoryService")
@@ -38,6 +41,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 
 	@Autowired
 	CategoryBrandRelationService categoryBrandRelationService;
+
+	/**
+	 * SpringBoot中使用redis做缓存
+	 */
+	@Autowired
+	private StringRedisTemplate redisTemplate;
 
 	@Override
 	public PageUtils queryPage(Map<String, Object> params) {
@@ -121,13 +130,43 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 		return categoryEntities;
 	}
 
+
 	/**
-	 * 查出所有的分类
+	 * P153、缓存-redis缓存使用-改造三级分类业务
 	 *
 	 * @return
 	 */
 	@Override
 	public Map<String, List<Catelog2Vo>> getCatalogJson() {
+		// 注意：给缓存中放json字符串，拿出的json字符串，还要逆转为能用的对象类型；【序列号与反序列化】
+
+		// 1、加入缓存逻辑  get(key) | 注意：缓存中存的数据是json字符串
+		// JSON的好处：其是跨语言，跨平台兼容
+		String catalogJSON = redisTemplate.opsForValue().get("catalogJSON");
+		if (StringUtils.isEmpty(catalogJSON)) {
+			// 2、缓存中没有所需数据，那么就去查询数据库（从数据库中获取数据）
+			Map<String, List<Catelog2Vo>> catalogJsonFromDb = getCatalogJsonFromDb();
+			// 3、将从数据中查到的数据放入到缓存中去，注意：需要将查询出来的对象转成json然后在放在缓存中
+			String s = JSON.toJSONString(catalogJsonFromDb);
+			redisTemplate.opsForValue().set("catalogJSON", s);
+			return catalogJsonFromDb;
+		}
+
+		// 逆转：转成我们指定的对象类型 Map<String, List<Catelog2Vo>>
+		// JSON.parseObject引入这种类型： parse0bject(String text, TypeReference<T> type, Feature... features )T
+		Map<String, List<Catelog2Vo>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2Vo>>>() {
+		});
+		return result;
+	}
+
+	/**
+	 * 查出所有的分类(仅业务逻辑优化)
+	 * 从数据库中查询并封装整个分类数据（未使用redis做缓存）
+	 *
+	 * @return
+	 */
+	//@Override
+	public Map<String, List<Catelog2Vo>> getCatalogJsonFromDb() {
 
 		/**
 		 * 1、将数据库的多次查询变成一次（150、性能压测优化优化三级分类数据获取）
