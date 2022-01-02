@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @Configuration
 @EnableTransactionManagement    //开启事务功能
 @MapperScan("com.atguigu.gulimall.product.dao")
-public class MybatisConfig {
+public class MyBatisConfig {
     //引入分页插件
     // 旧版
     @Bean

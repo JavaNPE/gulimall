@@ -1,27 +1,19 @@
 package com.atguigu.gulimall.product;
 
-import com.aliyun.oss.OSS;
-import com.aliyun.oss.OSSClient;
-import com.aliyun.oss.OSSClientBuilder;
 import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.service.BrandService;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-
-
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
-import sun.net.www.content.image.png;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
@@ -42,6 +34,17 @@ public class GulimallProductApplicationTests {
 
 	@Autowired
 	StringRedisTemplate stringRedisTemplate;
+
+	@Autowired
+	RedissonClient redissonClient;
+
+	/**
+	 * 测试Redisson
+	 */
+	@Test
+	public void redisson() {
+		System.out.println(redissonClient);
+	}
 
 	/**
 	 * 测试redis
