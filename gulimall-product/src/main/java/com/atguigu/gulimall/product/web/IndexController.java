@@ -3,6 +3,7 @@ package com.atguigu.gulimall.product.web;
 import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
+import org.redisson.api.RCountDownLatch;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RSemaphore;
@@ -12,6 +13,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
@@ -205,6 +207,31 @@ public class IndexController {
 		// 释放一个车位
 		park.release();
 		return "ok";
+	}
+
+	/**
+	 * 8.8. 分布式：闭锁（CountDownLatch）
+	 * 举例：放假锁门，1班没人了，2班没人了.....共五个班
+	 * 5个班级的人全部都走完了，我们才可以锁大门。理解成打团，人数必须够才能开团。
+	 */
+	@GetMapping("/lockDoor")
+	@ResponseBody
+	public String lockDoor() throws InterruptedException {
+		RCountDownLatch door = redisson.getCountDownLatch("door");
+		// 设置成5个班
+		door.trySetCount(5);
+		// 等待闭锁都完成
+		door.await();
+		return "放假了...";
+	}
+
+	@GetMapping("/gogogo/{id}")
+	@ResponseBody
+	public String gogogo(@PathVariable("id") Long id) {
+		RCountDownLatch door = redisson.getCountDownLatch("door");
+		// 计数减一：走一个就减掉一个
+		door.countDown();
+		return id + "班的人都走了...";
 	}
 
 }
