@@ -4,8 +4,10 @@ import com.atguigu.gulimall.product.entity.CategoryEntity;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
 import org.redisson.api.RLock;
+import org.redisson.api.RReadWriteLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -29,6 +32,9 @@ public class IndexController {
 
 	@Autowired
 	RedissonClient redisson;
+
+	@Autowired
+	StringRedisTemplate redisTemplate;
 
 	/**
 	 * 无论我们是访问：
@@ -97,5 +103,58 @@ public class IndexController {
 			lock.unlock();
 		}
 		return "hello";
+	}
+
+	/**
+	 * 读写锁：保证一定能读到最新数据, 修改期间，写锁是一个排他锁(互斥锁)。读锁是一个共享锁；
+	 * 写锁没释放，读就必须等待。
+	 * 测试读写锁：写锁
+	 *
+	 * @return
+	 */
+	@GetMapping("/write")
+	@ResponseBody
+	public String writeValue() {
+		RReadWriteLock lock = redisson.getReadWriteLock("rw-lock");
+		String s = "";
+		// 获取写锁
+		RLock rLock = lock.writeLock();
+		try {
+			// 读写锁的用法：1、改数据加写锁，读数据加读锁
+			rLock.lock();
+			s = UUID.randomUUID().toString();
+			redisTemplate.opsForValue().set("writeValue", s);
+			Thread.sleep(30000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			rLock.unlock();
+		}
+		return s;
+	}
+
+	/**
+	 * 测试读写锁：读锁
+	 *
+	 * @return
+	 */
+	@GetMapping("/read")
+	@ResponseBody
+	public String readValue() {
+		RReadWriteLock lock = redisson.getReadWriteLock("rw-lock");
+		String s = "";
+		// 获取读锁
+		RLock rLock = lock.readLock();
+		rLock.lock();
+		try {
+			s = UUID.randomUUID().toString();
+			s = redisTemplate.opsForValue().get("writeValue");
+			Thread.sleep(30000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		} finally {
+			rLock.unlock();
+		}
+		return s;
 	}
 }
