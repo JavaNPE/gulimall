@@ -5,6 +5,7 @@ import com.atguigu.gulimall.product.service.CategoryService;
 import com.atguigu.gulimall.product.vo.Catelog2Vo;
 import org.redisson.api.RLock;
 import org.redisson.api.RReadWriteLock;
+import org.redisson.api.RSemaphore;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
@@ -108,7 +109,7 @@ public class IndexController {
 	/**
 	 * 读写锁：保证一定能读到最新数据, 修改期间，写锁是一个排他锁(互斥锁，独享锁)。读锁是一个共享锁；
 	 * 写锁没释放，读就必须等待。
-	 *
+	 * <p>
 	 * 如果是先写（锁）——>在读（锁）： 读的时候就必须等待写锁释放
 	 * 读 ——> 读： 相当于无锁，并发读，只会在redis中记录好，所有当前的读锁。他们都会同时加锁成功
 	 * 写 ——> 读： 等待写锁释放
@@ -167,4 +168,43 @@ public class IndexController {
 		}
 		return s;
 	}
+
+	/**
+	 * 信号量（也可以用作分布式限流）：https://github.com/redisson/redisson/wiki/8.6. 信号量（Semaphore）
+	 * 车库停车
+	 * 3车位
+	 *
+	 * @return
+	 */
+	@GetMapping("/park")
+	@ResponseBody
+	public String park() throws InterruptedException {
+		// 分布式信号量的名字，只要名字相同都是同一个信号量
+		RSemaphore park = redisson.getSemaphore("park");
+		// 获取一个信号（也可以理解为获取一个值，或占一个车位）
+//			park.acquire();	//阻塞式等待
+		boolean b = park.tryAcquire();
+		if (b) {
+			// 执行业务
+		} else {
+			// 提示错误信息
+			return "error";
+		}
+		return "ok=>" + b;
+	}
+
+	/**
+	 * 车开走的方法
+	 *
+	 * @return
+	 */
+	@GetMapping("/go")
+	@ResponseBody
+	public String go() {
+		RSemaphore park = redisson.getSemaphore("park");
+		// 释放一个车位
+		park.release();
+		return "ok";
+	}
+
 }
