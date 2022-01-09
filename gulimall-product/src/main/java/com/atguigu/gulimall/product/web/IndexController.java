@@ -106,8 +106,15 @@ public class IndexController {
 	}
 
 	/**
-	 * 读写锁：保证一定能读到最新数据, 修改期间，写锁是一个排他锁(互斥锁)。读锁是一个共享锁；
+	 * 读写锁：保证一定能读到最新数据, 修改期间，写锁是一个排他锁(互斥锁，独享锁)。读锁是一个共享锁；
 	 * 写锁没释放，读就必须等待。
+	 *
+	 * 如果是先写（锁）——>在读（锁）： 读的时候就必须等待写锁释放
+	 * 读 ——> 读： 相当于无锁，并发读，只会在redis中记录好，所有当前的读锁。他们都会同时加锁成功
+	 * 写 ——> 读： 等待写锁释放
+	 * 写 ——> 写： 阻塞方式
+	 * 读 ——> 写： 有读锁，写也需要等待。会不会写等待（会）？
+	 * 总结：只要有写锁的存在，都必须等待。
 	 * 测试读写锁：写锁
 	 *
 	 * @return
@@ -122,13 +129,15 @@ public class IndexController {
 		try {
 			// 读写锁的用法：1、改数据加写锁，读数据加读锁
 			rLock.lock();
+			System.out.println("写锁加锁成功..." + Thread.currentThread().getId());
 			s = UUID.randomUUID().toString();
-			redisTemplate.opsForValue().set("writeValue", s);
 			Thread.sleep(30000);
+			redisTemplate.opsForValue().set("writeValue", s);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
 			rLock.unlock();
+			System.out.println("写锁释放" + Thread.currentThread().getId());
 		}
 		return s;
 	}
@@ -147,13 +156,14 @@ public class IndexController {
 		RLock rLock = lock.readLock();
 		rLock.lock();
 		try {
-			s = UUID.randomUUID().toString();
+			System.out.println("读锁加锁成功" + Thread.currentThread().getId());
 			s = redisTemplate.opsForValue().get("writeValue");
 			Thread.sleep(30000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		} finally {
 			rLock.unlock();
+			System.out.println("读锁释放" + Thread.currentThread().getId());
 		}
 		return s;
 	}
