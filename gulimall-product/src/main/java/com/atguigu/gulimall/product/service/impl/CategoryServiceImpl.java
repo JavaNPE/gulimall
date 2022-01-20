@@ -12,6 +12,8 @@ import com.atguigu.gulimall.product.vo.Catelog2Vo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.redisson.api.RLock;
+import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -49,6 +51,10 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	 */
 	@Autowired
 	private StringRedisTemplate redisTemplate;
+
+	// 注入redisson分布式锁
+	@Autowired
+	RedissonClient redisson;
 
 	@Override
 	public PageUtils queryPage(Map<String, Object> params) {
@@ -116,6 +122,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 //        categoryService.updateById(category);
 		//更新关联表中的数据
 		categoryBrandRelationService.updateCategory(category.getCatId(), category.getName());
+
+		// 双写模式：同时修改缓存中的数据
+		// 失效模式：redis.delete("catalogJSON"); 等待下次主动查询进行更新
 	}
 
 	/**
@@ -173,6 +182,30 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 		Map<String, List<Catelog2Vo>> result = JSON.parseObject(catalogJSON, new TypeReference<Map<String, List<Catelog2Vo>>>() {
 		});
 		return result;
+	}
+
+	/**
+	 * P166-使用redisson做分布式锁:
+	 * 思考：缓存里面的数据如何Σ和数据库中的数据保持一致————缓存数据一致性问题？
+	 * 1、双写模式；
+	 * 2、失效模式：
+	 *
+	 * @return
+	 */
+	public Map<String, List<Catelog2Vo>> getCatalogJsonFromDbWithRedissonLock() {
+
+		// 1、注意：只要锁的名字一样就是同一把锁。锁的粒度，越细越快
+		// 锁的粒度：具体缓存的是某个数据，比如：11号商品： product-11-lock product-12-lock product-lock(这种锁的粒度就不够细)
+		RLock lock = redisson.getLock("CatalogJson-json");
+		lock.lock();    // 只要一加锁，下面的所有业务代码就是一个阻塞等待。
+
+		Map<String, List<Catelog2Vo>> dataFromDb;
+		try {
+			dataFromDb = this.getDataFromDb();
+		} finally {
+			lock.unlock();
+		}
+		return dataFromDb;
 	}
 
 	/**

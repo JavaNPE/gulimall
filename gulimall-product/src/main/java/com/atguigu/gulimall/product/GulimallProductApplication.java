@@ -76,6 +76,10 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *              <version>3.12.0</version>
  *          </dependency>
  *      2)、配置redisson(参考官方文档：https://github.com/redisson/redisson/wiki/2.-%E9%85%8D%E7%BD%AE%E6%96%B9%E6%B3%95)
+ * 8、整合SpringCache简化开发
+ *      1、引入依赖
+ *          spring-boot-starter-cache、spring-boot-starter-data-redis
+*       2、写配置
  *
  */
 @EnableFeignClients(basePackages = "com.atguigu.gulimall.product.feign")
