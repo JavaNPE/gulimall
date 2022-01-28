@@ -52,6 +52,7 @@ public class IndexController {
 	@GetMapping({"/", "/index.html"})
 	public String indexPage(Model model) {
 
+		System.out.println(""+Thread.currentThread().getId());
 		//TODO 1、查出所有的一级分类
 		List<CategoryEntity> categoryEntities = categoryService.getLevel1Categorys();
 

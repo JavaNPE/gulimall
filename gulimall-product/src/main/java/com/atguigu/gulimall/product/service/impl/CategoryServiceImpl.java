@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
 import org.springframework.stereotype.Service;
@@ -133,8 +134,12 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	 *
 	 * @return
 	 */
+	// 我们使用springCache的时候，每一个需要缓存的数据我们都来指定要放到的那个名字的缓存。【缓存的分区（推荐按照业务类型分）】
+	@Cacheable({"category"})	//这个注解代表当前方法的结果需要缓存，如果缓存中有，方法就不用调用。如果缓存中没有，会调用方法，最终将方法的结果放入缓存。
 	@Override
 	public List<CategoryEntity> getLevel1Categorys() {
+		System.out.println("getLevel1Categorys......");
+		long l = System.currentTimeMillis();
 		//selectList查询集合
 		List<CategoryEntity> categoryEntities = baseMapper.selectList(new QueryWrapper<CategoryEntity>().eq("parent_cid", 0));
 
