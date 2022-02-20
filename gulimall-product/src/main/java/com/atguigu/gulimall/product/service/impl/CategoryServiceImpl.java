@@ -135,7 +135,20 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	 * @return
 	 */
 	// 我们使用springCache的时候，每一个需要缓存的数据我们都来指定要放到的那个名字的缓存。【缓存的分区（推荐按照业务类型分）】
-	@Cacheable({"category"})	//这个注解代表当前方法的结果需要缓存，如果缓存中有，方法就不用调用。如果缓存中没有，会调用方法，最终将方法的结果放入缓存。
+
+	/**
+	 * 3.默认行为
+	 * 		1)、如果缓存中有，方法不用调用。
+	 * 		2)、key默认自动生成:缓存的名字:SimpleKey {}(自主生成的key值)，
+	 * 		3)、缓存的value的值。默认使用jak序列化机制。将序列化后的数据存到redie
+	 * 		4)。默认ttl时间-1:
+	 * 自定义。
+	 * 		1)、指定生成的缓存使用的key:	key属性指定，接受一个Spel表达式
+	 * 		2)。指定编存的数据的存活时间: 在配置文件中修改ttl单位毫秒 spring.cache.redis.time-to-live=3600000
+	 * 		3)。将数据保存为json格式
+	 * @return
+	 */
+	@Cacheable(value = {"category"}, key = "#root.method.name")	//这个注解代表当前方法的结果需要缓存，如果缓存中有，方法就不用调用。如果缓存中没有，会调用方法，最终将方法的结果放入缓存。
 	@Override
 	public List<CategoryEntity> getLevel1Categorys() {
 		System.out.println("getLevel1Categorys......");
