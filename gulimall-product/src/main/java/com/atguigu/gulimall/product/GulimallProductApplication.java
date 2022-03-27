@@ -93,7 +93,12 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  *              @CacheConfig: Shares some common cache-related settings at class-level.: 在类级别共享缓存的相同配置
  *              1、开启缓存功能  @EnableCaching
  *              2、只需要使用注解就能完成缓存操作
- *
+ *			(4)、原理:
+ *			 CacheAutoConfiguration -> RedisCacheConfiguration - >
+ *			 自动配置了RedisCacheManager- >初始化所有的缓存->每个缓存决定使用什么配置
+ *			 ->如果redisCacheConfiguration有就用已有的，没有就用默认配置
+ *			 ->想改缓存的配置，只需要给容器中放一个RedisCacheConfiguration即 可
+ *           ->就会应用到当前RedisCacheManager管理的所有缓存分区中
  */
 @EnableCaching
 @EnableFeignClients(basePackages = "com.atguigu.gulimall.product.feign")
