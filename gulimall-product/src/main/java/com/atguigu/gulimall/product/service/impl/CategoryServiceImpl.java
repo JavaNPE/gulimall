@@ -15,6 +15,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.redisson.api.RLock;
 import org.redisson.api.RedissonClient;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.script.DefaultRedisScript;
@@ -112,9 +113,21 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	/**
 	 * 级联更新所有关联的数据
 	 * 方式一：通过xml文件格式操作数据库写法：目前报错：{"msg":"参数格式校验失败","code":10001}
-	 *
+	 * @CacheEvict 缓存失效模式
+	 * 		1、同时进行多种缓存操作：可以使用 @Caching进行组装缓存操作逻辑
+	 * 		2、指定删除某个分区下的所有数据：	@CacheEvict(value = "category", allEntries = true)，对缓存进行分区，方便后期批量对同属性缓存进行操作
+	 * 		3、存储同一类型的数据，都可以指定成同一个分区。分区名默认就是缓存的前缀。
 	 * @param category
 	 */
+	// 需要给CacheEvict注解的key加单引号，保证SpEL语法正确, 但是如果有多个缓存我们想要在更新的时候同时清空这两组缓存，需要使用@Caching()注解
+//	@CacheEvict(value = "category", key = "'getLevel1Categorys'")
+/*	@Caching(evict = {
+			@CacheEvict(value = "category", key = "'getLevel1Categorys'"),
+			@CacheEvict(value = "category", key = "'getCatalogJson'")
+	})*/
+	//          category分区，里面的所有数据（true）
+	@CacheEvict(value = "category", allEntries = true)	//失效模式
+//	@CachePut	//双写模式使用这个注解
 	@Transactional  //这是一个事务= 更新自己还有更新级联的数据，所以加个事务
 	@Override
 	public void updateCascade(CategoryEntity category) {
@@ -148,7 +161,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	 * 		3)。将数据保存为json格式
 	 * @return
 	 */
-	@Cacheable(value = {"category"}, key = "#root.method.name")	//这个注解代表当前方法的结果需要缓存，如果缓存中有，方法就不用调用。如果缓存中没有，会调用方法，最终将方法的结果放入缓存。
+	@Cacheable(value = {"category"}, key = "#root.method.name")	//@Cacheable这个注解代表当前方法的结果需要缓存，如果缓存中有，方法就不用调用。如果缓存中没有，会调用方法，最终将方法的结果放入缓存。
 	@Override
 	public List<CategoryEntity> getLevel1Categorys() {
 		System.out.println("getLevel1Categorys......");
@@ -159,6 +172,43 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 		return categoryEntities;
 	}
 
+
+	@Cacheable(value = "category", key = "#root.methodName")
+	@Override
+	public Map<String, List<Catelog2Vo>> getCatalogJson() {
+		System.out.println("查询类数据库......");
+		// 查询所有
+		List<CategoryEntity> selectList = baseMapper.selectList(null);
+		//1、查出所有1级分类
+		List<CategoryEntity> level1Categorys = getParent_cid(selectList, 0L);
+		//2、封装数据【重要】
+		Map<String, List<Catelog2Vo>> parent_cid = level1Categorys.stream().collect(Collectors.toMap(k -> k.getCatId().toString(), v -> {
+			//1、每一个的一级分类，查到这个一级分类的二级分类
+			List<CategoryEntity> categoryEntities = getParent_cid(selectList, v.getCatId());
+
+			//2、封装上面的结果
+			List<Catelog2Vo> catelog2Vos = null;
+			if (categoryEntities != null) {
+				catelog2Vos = categoryEntities.stream().map(l2 -> {
+					Catelog2Vo catelog2Vo = new Catelog2Vo(v.getCatId().toString(), null, l2.getCatId().toString(), l2.getName());
+					//1、找当前二级分类的三级分类，封装成vo
+					List<CategoryEntity> level3Catelog = getParent_cid(selectList, l2.getCatId());
+					if (level3Catelog != null) {
+						List<Catelog2Vo.Catelog3Vo> collect = level3Catelog.stream().map(l3 -> {
+							//2、封装成指定格式
+							Catelog2Vo.Catelog3Vo catelog3Vo = new Catelog2Vo.Catelog3Vo(l2.getCatId().toString(), l3.getCatId().toString(), l3.getName());
+							return catelog3Vo;
+						}).collect(Collectors.toList());
+
+						catelog2Vo.setCatalog3List(collect);
+					}
+					return catelog2Vo;
+				}).collect(Collectors.toList());
+			}
+			return catelog2Vos;
+		}));
+		return parent_cid;
+	}
 
 	/**
 	 * P153、缓存-redis缓存使用-改造三级分类业务
@@ -175,8 +225,8 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 	 *
 	 * @return
 	 */
-	@Override
-	public Map<String, List<Catelog2Vo>> getCatalogJson() {
+//	@Override
+	public Map<String, List<Catelog2Vo>> getCatalogJson2() {
 		// 注意：给缓存中放json字符串，拿出的json字符串，还要逆转为能用的对象类型；【序列号与反序列化】
 		/**
 		 * 1、空结果缓存：解决缓存穿透
@@ -400,6 +450,5 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryDao, CategoryEntity
 			return (menu1.getSort() == null ? 0 : menu1.getSort()) - (menu2.getSort() == null ? 0 : menu2.getSort());
 		}).collect(Collectors.toList());
 		return children;
-
 	}
 }
