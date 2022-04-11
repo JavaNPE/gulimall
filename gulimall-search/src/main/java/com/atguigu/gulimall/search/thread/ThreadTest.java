@@ -20,11 +20,28 @@ public class ThreadTest {
 		 * 1)、继承Thread
 		 * 2)、实现Runnable接口
 		 * 3)、实现Callable接口+ FutureTask (可以拿到返回结果，可以处理异常)
-		 * 4)、线程池： 给线程池直接提交任务
+		 * 4)、线程池【指代ExecutorService下面的东西】： 给线程池直接提交任务 service.execute(new Runnable01());
+		 * 		1、线程池的创建：
+		 * 			1.1 通过Executors创建
+		 * 			1.2 通过 new ThreadPoolExecutor创建
 		 * 	区别;
 		 * 		1、2:不能得到返回值。3:可以获取返回值
 		 * 		1、2、3:都不能控制资源
 		 * 		4:可以控制资源
+		 * 	线程池的运行流程:
+		 * 		1、线程池创建，准备好core数量的核心线程，准备接受任务
+		 * 		2、新的任务进来，用core准备好的空闲线程执行。中
+		 * 				(1)、core满了，就将再进来的任务放入阻塞队列中。空闲的core就会自己去阻塞队列获取任务执行
+		 * 				(2)、阻塞队列满了，就直接开新线程执行，最大只能开到max指定的数量
+		 * 				(3)、max都执行好了。Max-core数量空闲的线程会在keepAliveTime指定的时间后自动销毁。最终保持到core大小
+		 * 				(4)、 如果线程数开到了max的数量，还有新任务进来，就会使用reject 指定的拒绝策略进行处理
+		 * 		3、所有的线程创建都是由指定的factory创建的。
+		 *
+		 * Future:可以获取到异步结果
+		 *
+		 * 线程池面试题：一个线程池 core7; max20，queue: 50, 100 并发进来怎么分配的？
+		 *
+		 * 先有7个能直接得到执行，接下来50个进入队列排队，在多开13个继续执行。现在70（20 +  50）个被安排上了。剩下30个默认拒绝策略。
 		 */
 		// -------------方式1、继承Thread 启动线程 begin--------------
 /*		Thread01 thread01 = new Thread01();
@@ -47,7 +64,15 @@ public class ThreadTest {
 		// new Thread(() -> System.out.println("hello")).start();
 
 		// 当前系统中线程池只有一两个，每个异步任务，提交给线程池让他自己去执行就行。
-		service.execute(new Runnable01());
+		/*service.execute(new Runnable01());*/
+//		new ThreadPoolExecutor();
+
+// ---------------------------------------常见的4种线程池------------------------------------------
+//		Executors.newCachedThreadPool(); // 核心是0，所有都可回收。
+//		Executors.newFixedThreadPool();	// 固定大小，core=max；都不可回收
+//		Executors.newScheduledThreadPool();	// 定时任务的线程池
+//		Executors.newSingleThreadExecutor();	//单线程的线程池，后台从队列里面获取任务，挨个执行
+// ---------------------------------------常见的4种线程池------------------------------------------
 
 		System.out.println("main....end...."/* + integer*/);
 	}
