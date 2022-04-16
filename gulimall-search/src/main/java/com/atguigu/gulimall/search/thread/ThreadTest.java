@@ -107,7 +107,7 @@ public class ThreadTest {
 		System.out.println("main....end....");*/
 
 		// 3、thenAcceptAsync：能接收上一步结果，有返回值
-		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+		/*CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
 			System.out.println("当前线程：" + Thread.currentThread().getId());
 			int i = 10 / 5;
 			System.out.println("运行结果：" + i);
@@ -116,6 +116,43 @@ public class ThreadTest {
 			// R apply(T t);
 			System.out.println("任务（线程）2启动了" + res);
 			return "Hello " + res;
+		}, executor);
+		System.out.println("main....end...." + future.get());*/
+
+		/**
+		 *  两个异步线程都完成
+		 */
+		CompletableFuture<Integer> future01 = CompletableFuture.supplyAsync(() -> {
+			System.out.println("任务1线程：" + Thread.currentThread().getId());
+			int i = 10 / 5;
+			System.out.println("任务1结束：" + i);
+			return i;
+		}, executor);
+
+		CompletableFuture<String> future02 = CompletableFuture.supplyAsync(() -> {
+			System.out.println("任务2线程：" + Thread.currentThread().getId());
+			System.out.println("任务2结束：");
+			return "Hello";
+		}, executor);
+
+		// 任务1执行完之后 开启 任务2 等 1和2都执行完之后 在执行任务3
+		// runAfterBothAsync：无法感知前两个线程的结果
+		/*future01.runAfterBothAsync(future02, () -> {
+			System.out.println("任务3开始...");
+		}, executor);
+		System.out.println("main....end....");*/
+
+		// thenAcceptBothAsync： 可以感知前两个线程的结果值
+		/*future01.thenAcceptBothAsync(future02, (f1, f2) -> {
+			// void accept(T t, U u);
+			System.out.println("任务3开始...任务1的结果：" + f1 + "; 任务2的结果：" + f2);
+		}, executor);
+		System.out.println("main....end....");*/
+
+		// thenCombineAsync合并多个任务，既能结束前面线程的返回值，又能其返回值进行操作，return输出自己（新线程）的值。
+		CompletableFuture<String> future = future01.thenCombineAsync(future02, (f1, f2) -> {
+			System.out.println("任务3开始...");
+			return "线程1的值：" + f1 + "；线程2的值：" + f2 + "；  另外拼接-> Haha";
 		}, executor);
 		System.out.println("main....end...." + future.get());
 	}
