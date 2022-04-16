@@ -13,6 +13,7 @@ import java.util.concurrent.Executors;
  * @Description
  */
 public class ThreadTest {
+	// 创建线程池，供后面使用
 	public static ExecutorService executor = Executors.newFixedThreadPool(10);
 
 	public static void main(String[] args) throws ExecutionException, InterruptedException {
@@ -42,7 +43,7 @@ public class ThreadTest {
 		/**
 		 * 方法异步执行完成后的处理
 		 */
-		CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
+/*		CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> {
 			System.out.println("当前线程：" + Thread.currentThread().getId());
 			int i = 10 / 5;
 			System.out.println("运行结果：" + i);
@@ -61,6 +62,62 @@ public class ThreadTest {
 		// R apply(T t, U u)
 		Integer integer = future.get();
 		System.out.println("main....end...." + integer);
+		*/
+
+		/**
+		 * 	线程串行化：
+		 * 		1、thenRun：不能获取到上一步的执行结果，没有返回值
+		 * 		.thenRunAsync(() -> {
+		 * 			System.out.println("任务（线程）2启动了");
+		 *                }, executor);
+		 *      2、thenAcceptAsync：能接收上一步的结果，但是无返回值
+		 *      .thenAcceptAsync((res) -> {
+		 * 			// void accept(T t);
+		 * 			System.out.println("任务（线程）2启动了" + res);
+		 *                }, executor);
+		 *      3、thenAcceptAsync：能接收上一步结果，有返回值
+		 *      .thenApplyAsync((res) -> {
+		 * 			// R apply(T t);
+		 * 			System.out.println("任务（线程）2启动了" + res);
+		 * 			return "Hello " + res;
+		 *                }, executor);
+		 * 		System.out.println("main....end...." + future.get());
+		 */
+		// 1、thenRun：不能获取到上一步的执行结果，没有返回值
+		/*		CompletableFuture<Void> future = CompletableFuture.supplyAsync(() -> {
+			System.out.println("当前线程：" + Thread.currentThread().getId());
+			int i = 10 / 5;
+			System.out.println("运行结果：" + i);
+			return i;
+		}, executor).thenRunAsync(() -> {
+			System.out.println("任务（线程）2启动了");
+		}, executor);
+		System.out.println("main....end....");*/
+
+		// 2、thenAcceptAsync：能接收上一步的结果，但是无返回值
+		/*CompletableFuture.supplyAsync(() -> {
+			System.out.println("当前线程：" + Thread.currentThread().getId());
+			int i = 10 / 5;
+			System.out.println("运行结果：" + i);
+			return i;
+		}, executor).thenAcceptAsync((res) -> {
+			// void accept(T t);
+			System.out.println("任务（线程）2启动了" + res);
+		}, executor);
+		System.out.println("main....end....");*/
+
+		// 3、thenAcceptAsync：能接收上一步结果，有返回值
+		CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+			System.out.println("当前线程：" + Thread.currentThread().getId());
+			int i = 10 / 5;
+			System.out.println("运行结果：" + i);
+			return i;
+		}, executor).thenApplyAsync((res) -> {
+			// R apply(T t);
+			System.out.println("任务（线程）2启动了" + res);
+			return "Hello " + res;
+		}, executor);
+		System.out.println("main....end...." + future.get());
 	}
 
 	public void thread(String[] args) throws ExecutionException, InterruptedException {
