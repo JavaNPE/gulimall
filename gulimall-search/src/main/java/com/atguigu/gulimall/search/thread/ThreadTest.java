@@ -122,7 +122,7 @@ public class ThreadTest {
 		/**
 		 *  两个异步线程都完成
 		 */
-		CompletableFuture<Object> future01 = CompletableFuture.supplyAsync(() -> {
+		/*CompletableFuture<Object> future01 = CompletableFuture.supplyAsync(() -> {
 			System.out.println("任务1线程：" + Thread.currentThread().getId());
 			int i = 10 / 5;
 			System.out.println("任务1结束：" + i);
@@ -139,7 +139,7 @@ public class ThreadTest {
 				e.printStackTrace();
 			}
 			return "Hello";
-		}, executor);
+		}, executor);*/
 
 		// 任务1执行完之后 开启 任务2 等 1和2都执行完之后 在执行任务3
 		// runAfterBothAsync：无法感知前两个线程的结果
@@ -181,13 +181,47 @@ public class ThreadTest {
 		System.out.println("main...end...");*/
 
 		// applyToEitherAsync: 自己感知结果，自己有返回值。
-		CompletableFuture<String> future = future01.applyToEitherAsync(future02, res -> {
+		/*CompletableFuture<String> future = future01.applyToEitherAsync(future02, res -> {
 			System.out.println("任务3开始执行...之前的结果res：" + res);
 			return res.toString() + "-> 哈哈";
 		}, executor);
 
-		System.out.println("main...end..." + future.get());
+		System.out.println("main...end..." + future.get());*/
 
+		CompletableFuture<String> futureImg = CompletableFuture.supplyAsync(() -> {
+			System.out.println("查询商品的图片信息");
+			return "hello.jpg";
+		}, executor);
+
+		CompletableFuture<String> futureAttr = CompletableFuture.supplyAsync(() -> {
+			System.out.println("查询商品的属性信息");
+			return "黑色+256";
+		}, executor);
+
+		CompletableFuture<String> futureDesc = CompletableFuture.supplyAsync(() -> {
+			try {
+				Thread.sleep(3000);
+				System.out.println("查询商品介绍");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			return "华为";
+		}, executor);
+		// 阻塞式等待：浪费时间,阻塞式等待既浪费时间，又有冗余代码，
+		/*futureImg.get();
+		futureAttr.get();
+		futureDesc.get();*/
+
+		// 我们可以使用allOf() 所有的任务线程都做完之后我们在处理最终数据。
+		/*CompletableFuture<Void> allOf = CompletableFuture.allOf(futureImg, futureAttr, futureDesc);
+		// 等待所有结果完成
+		allOf.get();
+		System.out.println("main...end..." + futureImg.get() + "=>" + futureAttr.get() + "=>" + futureDesc.get());*/
+
+		// anyOf：只要有一个任务完成
+		CompletableFuture<Object> anyOf = CompletableFuture.anyOf(futureImg, futureAttr, futureDesc);
+		anyOf.get();
+		System.out.println("main...end..." + anyOf.get());
 	}
 
 	public void thread(String[] args) throws ExecutionException, InterruptedException {
