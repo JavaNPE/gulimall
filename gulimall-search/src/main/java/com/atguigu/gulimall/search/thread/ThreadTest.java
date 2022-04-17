@@ -122,16 +122,22 @@ public class ThreadTest {
 		/**
 		 *  两个异步线程都完成
 		 */
-		CompletableFuture<Integer> future01 = CompletableFuture.supplyAsync(() -> {
+		CompletableFuture<Object> future01 = CompletableFuture.supplyAsync(() -> {
 			System.out.println("任务1线程：" + Thread.currentThread().getId());
 			int i = 10 / 5;
 			System.out.println("任务1结束：" + i);
 			return i;
 		}, executor);
 
-		CompletableFuture<String> future02 = CompletableFuture.supplyAsync(() -> {
+		CompletableFuture<Object> future02 = CompletableFuture.supplyAsync(() -> {
 			System.out.println("任务2线程：" + Thread.currentThread().getId());
-			System.out.println("任务2结束：");
+
+			try {
+				Thread.sleep(3000);
+				System.out.println("任务2结束：");
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 			return "Hello";
 		}, executor);
 
@@ -150,11 +156,38 @@ public class ThreadTest {
 		System.out.println("main....end....");*/
 
 		// thenCombineAsync合并多个任务，既能结束前面线程的返回值，又能其返回值进行操作，return输出自己（新线程）的值。
-		CompletableFuture<String> future = future01.thenCombineAsync(future02, (f1, f2) -> {
+		/*CompletableFuture<String> future = future01.thenCombineAsync(future02, (f1, f2) -> {
 			System.out.println("任务3开始...");
 			return "线程1的值：" + f1 + "；线程2的值：" + f2 + "；  另外拼接-> Haha";
 		}, executor);
-		System.out.println("main....end...." + future.get());
+		System.out.println("main....end...." + future.get());*/
+
+		/**
+		 *  两个任务，只要有一个完成，我们就执行任务3
+		 *  	runAfterEitherAsync: 不感知结果，自己没有返回值。
+		 *  	acceptEitherAsync：感知前面线程的结果，自己没有返回值。
+		 *  	applyToEitherAsync: 自己感知结果，自己有返回值。
+		 */
+		// runAfterEitherAsync: 不感知结果，自己没有返回值。
+/*		future01.runAfterEitherAsync(future02,() -> {
+			System.out.println("任务3开始执行...");
+		}, executor);
+		System.out.println("main...end...");*/
+
+		// acceptEitherAsync：感知前面线程的结果，自己没有返回值。
+		/*future01.acceptEitherAsync(future02, (res)-> {
+			System.out.println("任务3开始执行...之前的结果：" + res);
+		}, executor);
+		System.out.println("main...end...");*/
+
+		// applyToEitherAsync: 自己感知结果，自己有返回值。
+		CompletableFuture<String> future = future01.applyToEitherAsync(future02, res -> {
+			System.out.println("任务3开始执行...之前的结果res：" + res);
+			return res.toString() + "-> 哈哈";
+		}, executor);
+
+		System.out.println("main...end..." + future.get());
+
 	}
 
 	public void thread(String[] args) throws ExecutionException, InterruptedException {
