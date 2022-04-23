@@ -61,6 +61,11 @@ spring:
           uri: lb://gulimall-search
           predicates:
             - Host=search.gulimall.com
+        # 只要以auth.gulimall.com开头，我们就将其负载均衡到gulimall-auth-server服务
+        - id: gulimall_auth_route
+          uri: lb://gulimall-auth-server
+          predicates:
+            - Host=auth.gulimall.com
 
 ## 前端项目，统一加上  /api 统一标识符
 ## http://localhost:88/api/captcha.jpg    实际获取到的验证码请求地址：http://localhost:8080/renren-fast/captcha.ipg
