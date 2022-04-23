@@ -9,6 +9,10 @@ spring:
       oss:
         endpoint: oss-cn-beijing.aliyuncs.com
         bucket: gulimall-dali
+      sms:
+        host: https://dfsns.market.alicloudapi.com
+        path: /data/send_sms
+        appcode: 392b091284794b308f7c7950c47249cf
   application:
     name: gulimall-third-party
 server:
