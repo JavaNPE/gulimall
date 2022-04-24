@@ -4,16 +4,23 @@ import com.atguigu.common.constant.AuthServerConstant;
 import com.atguigu.common.exception.BizCodeEnume;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.auth.feign.ThirdPartFeignService;
+import com.atguigu.gulimall.auth.vo.UserRegistVo;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import javax.validation.Valid;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 /**
  * @Author Dali
@@ -70,5 +77,41 @@ public class LoginController {
                 .set(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone, code, 10, TimeUnit.MINUTES);
         thirdPartFeignService.sendCode(phone, code);
         return R.ok();
+    }
+
+    /**
+     * RedirectAttributes redirectAttributes：模拟重定向携带数据
+     *
+     * @param vo
+     * @param result
+     * @param redirectAttributes
+     * @return
+     */
+    @PostMapping("/regist")
+    public String regist(@Valid UserRegistVo vo, BindingResult result, RedirectAttributes redirectAttributes) {
+        // Map<String, String> errors = new HashMap<>();
+        /**
+         * 方法一：将错误信息收集到map集合中
+         * result.getFieldErrors().stream().map(fieldError -> {
+         *                 String field = fieldError.getField();
+         *                 String defaultMessage = fieldError.getDefaultMessage();
+         *                 errors.put(field, defaultMessage);
+         *                 return errors;
+         */
+        if (result.hasErrors()) {
+
+            // 方法二：将错误信息收集到map集合中
+            Map<String, String> errors = result.getFieldErrors().stream()
+                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+
+            // model.addAttribute("errors", errors);
+            redirectAttributes.addFlashAttribute("errors", errors);
+
+            // 如果校验出错, 转发forward到注册页面 return "forward:/reg.html"; (后期回报错：Request method 'POST' not supported)
+            //用户注册->/regist[post]----》转发/reg. html (路径映射默认都是get方式访问的。)
+            return "redirect:http://auth.gulimall.com/reg.html";  // 使用thymeleaf直接跳转到reg.html页面
+        }
+        // 注册成功返回到首页，重定redirect向到登陆页面
+        return "redirect:/login.html";
     }
 }
