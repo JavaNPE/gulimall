@@ -1,0 +1,11 @@
+package com.atguigu.common.constant;
+
+/**
+ * @Author Dali
+ * @Date 2022/4/24 9:19
+ * @Version 1.0
+ * @Description: 定义验证码redis常量
+ */
+public class AuthServerConstant {
+    public static final String SMS_CODE_CACHE_PREFIX = "sms:code:";
+}
