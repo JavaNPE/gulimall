@@ -17,5 +17,9 @@
         <result property="note" column="note"/>
     </resultMap>
 
+    <select id="getDefaultLevel" resultType="com.atguigu.gulimall.member.entity.MemberLevelEntity">
+        SELECT * FROM ums_member_level uml WHERE uml.default_status  = '1';
+    </select>
+
 
 </mapper>
