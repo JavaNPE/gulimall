@@ -17,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
 import java.util.Map;
 
 
@@ -60,6 +61,7 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         entity.setPassword(encode);
 
         // TODO 其他的默认信息一一保存
+        entity.setCreateTime(new Date());
         memberDao.insert(entity);
     }
 

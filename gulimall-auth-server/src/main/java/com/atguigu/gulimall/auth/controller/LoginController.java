@@ -86,7 +86,8 @@ public class LoginController {
         // redis缓存验证码：设置redis中的key和value值，以及存入到redis中验证码的过期时间（10分钟有效）
         stringRedisTemplate.opsForValue()
                 .set(AuthServerConstant.SMS_CODE_CACHE_PREFIX + phone, substring, 10, TimeUnit.MINUTES);
-        thirdPartFeignService.sendCode(phone, code);
+        // 短信发送（PS: 由于短信套餐用完了，暂时关闭短信服务，已控制台为准）
+        // thirdPartFeignService.sendCode(phone, code);
         return R.ok();
     }
 
