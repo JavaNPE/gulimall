@@ -56,7 +56,10 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
 
         // 设置密码： 思考？密码如何进行加密存储：MD5盐值加密
         BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        entity.setPassword("");
+        String encode = passwordEncoder.encode(vo.getPassword());
+        entity.setPassword(encode);
+
+        // TODO 其他的默认信息一一保存
         memberDao.insert(entity);
     }
 
