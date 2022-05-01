@@ -14,6 +14,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -53,7 +54,8 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         entity.setMobile(vo.getPhone());
         entity.setUsername(vo.getUserName());
 
-        // 设置密码： 思考？密码如何进行加密存储
+        // 设置密码： 思考？密码如何进行加密存储：MD5盐值加密
+        BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
         entity.setPassword("");
         memberDao.insert(entity);
     }
