@@ -9,10 +9,12 @@ import com.atguigu.gulimall.member.entity.MemberLevelEntity;
 import com.atguigu.gulimall.member.exception.PhoneExistException;
 import com.atguigu.gulimall.member.exception.UserNameExistException;
 import com.atguigu.gulimall.member.service.MemberService;
+import com.atguigu.gulimall.member.vo.MemberLoginVo;
 import com.atguigu.gulimall.member.vo.MemberRegistVo;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -22,6 +24,7 @@ import java.util.Map;
 
 
 @Service("memberService")
+@Log4j2
 public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> implements MemberService {
 
     @Autowired
@@ -82,4 +85,31 @@ public class MemberServiceImpl extends ServiceImpl<MemberDao, MemberEntity> impl
         }
     }
 
+    @Override
+    public MemberEntity login(MemberLoginVo vo) {
+        String loginacct = vo.getLoginacct();
+        String password = vo.getPassword();
+
+        // 1、去数据库中查询用户名： SELECT * FROM ums_member um WHERE um.username  = ? OR um.mobile = ?
+        MemberDao memberDao = this.baseMapper;
+        MemberEntity entity = memberDao.selectOne(new QueryWrapper<MemberEntity>().eq("username", loginacct)
+                .or().eq("mobile", loginacct));
+        if (entity == null) {
+            log.info("未查询到注册用户，请检查用户名重新输入");
+            return null;
+        } else {
+            // 1、获取数据库中已保存的password信息：
+            String passwordDb = entity.getPassword();
+            BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+            // 2、密码匹配： 数据库中加了盐值的密码  与 前端用户输入的密码校验二者一致性。
+            boolean matches = passwordEncoder.matches(password, passwordDb);
+            if (matches) {
+                log.info("密码匹配一致");
+                return entity;
+            } else {
+                log.info("密码不一致，请检查后重新输入");
+                return null;
+            }
+        }
+    }
 }

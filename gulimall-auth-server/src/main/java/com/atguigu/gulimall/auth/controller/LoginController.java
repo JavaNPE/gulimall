@@ -6,6 +6,7 @@ import com.atguigu.common.exception.BizCodeEnume;
 import com.atguigu.common.utils.R;
 import com.atguigu.gulimall.auth.feign.MemberFeignService;
 import com.atguigu.gulimall.auth.feign.ThirdPartFeignService;
+import com.atguigu.gulimall.auth.vo.UserLoginVo;
 import com.atguigu.gulimall.auth.vo.UserRegistVo;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
@@ -149,7 +150,7 @@ public class LoginController {
                     // 失败 依旧返回注册页面
                     log.info("注册失败，依旧停留在注册页面");
                     Map<String,String> errors = new HashMap<>();
-                    errors.put("msg", r.getData(new TypeReference<String>(){}));
+                    errors.put("msg", r.getData("msg", new TypeReference<String>(){}));
                     redirectAttributes.addFlashAttribute("errrors", errors);
                     return "redirect:http://auth.gulimall.com/reg.html";
                 }
@@ -174,5 +175,27 @@ public class LoginController {
 
         /*// 注册成功返回到首页，重定redirect向到登陆页面
         return "redirect:/login.html";*/
+    }
+
+    /**
+     * 登录请求： 此处传入的是key-value 不是json数据，所以没有用@RequestBody注解
+     *
+     * @param vo
+     * @return
+     */
+    @PostMapping("/login")
+    public String login(UserLoginVo vo, RedirectAttributes redirectAttributes) {
+        // 进行远程登录
+        R login = memberFeignService.login(vo);
+        if (login.getCode() == 0) {
+            log.info("登录成功");
+            return "redirect:http://gulimall.com";
+        } else {
+            log.info("登录失败，重新登录");
+            Map<String, String> errors = new HashMap<>();
+            errors.put("msg", login.getData("msg", new TypeReference<String>(){}));
+            redirectAttributes.addFlashAttribute("errors", errors);
+            return "redirect:http://auth.gulimall.com/login.html";
+        }
     }
 }
