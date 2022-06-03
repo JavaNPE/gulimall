@@ -27,6 +27,9 @@ public class GulimallOrderApplicationTests {
     @Autowired
     RabbitTemplate rabbitTemplate;
 
+    /**
+     * 使用rabbitTemplate发送MQ消息
+     */
     @Test
     public void sendMessageTemplate() {
         // 发送消息，如果发送的消息是个对象，我们会使用序列化机制，将对象写出去。对象必须实现Serializable
