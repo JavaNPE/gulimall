@@ -55,7 +55,7 @@ public class GulimallOrderApplicationTests {
         // String exchange【交换机】,
         // String routingKey【路由键】,
         // Map<String, Object> arguments【自定义参数】)
-        //将exchange指定的交换机和destination目的地进行绑定，使用routingKey作为指定的路由键
+        // 将exchange指定的交换机和destination目的地进行绑定，使用routingKey作为指定的路由键
         Binding binding = new Binding("hello-java-queue", Binding.DestinationType.QUEUE, "hello-java-exchange",
                 "hello.java", null);
         amqpAdmin.declareBinding(binding);
