@@ -1,5 +1,7 @@
 package com.atguigu.gulimall.order;
 
+import com.alibaba.fastjson.JSONObject;
+import com.atguigu.gulimall.order.entity.OrderReturnReasonEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,9 +9,12 @@ import org.springframework.amqp.core.AmqpAdmin;
 import org.springframework.amqp.core.Binding;
 import org.springframework.amqp.core.DirectExchange;
 import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import java.util.Date;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -18,6 +23,23 @@ public class GulimallOrderApplicationTests {
 
     @Autowired
     AmqpAdmin amqpAdmin;
+
+    @Autowired
+    RabbitTemplate rabbitTemplate;
+
+    @Test
+    public void sendMessageTemplate() {
+        // 发送消息，如果发送的消息是个对象，我们会使用序列化机制，将对象写出去。对象必须实现Serializable
+        OrderReturnReasonEntity reasonEntity = new OrderReturnReasonEntity();
+        reasonEntity.setId(1L);
+        reasonEntity.setCreateTime(new Date());
+        reasonEntity.setName("绿妹");
+        //String jsonString = JSONObject.toJSONString(reasonEntity);
+        // 1、发送消息
+        String msg = "Hello World!";
+        rabbitTemplate.convertAndSend("hello-java-exchange", "hello.java", reasonEntity);
+        log.info("发送的消息内容为：【{}】", reasonEntity);
+    }
 
     /**
      * 1、测试RabbitMQ之如何通过代码的方式创建Exchange[hello.java.exchange]、Queue、Bingding绑定关系
@@ -60,6 +82,5 @@ public class GulimallOrderApplicationTests {
                 "hello.java", null);
         amqpAdmin.declareBinding(binding);
         log.info("Binding绑定关系[{}]创建成功", "hello-java-binding");
-
     }
 }
