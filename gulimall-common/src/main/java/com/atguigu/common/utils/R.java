@@ -12,7 +12,6 @@ import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.TypeReference;
 import org.apache.http.HttpStatus;
 
-import java.security.PublicKey;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +44,13 @@ public class R extends HashMap<String, Object> {
         Object data = get("data");  //此处get("data")默认是map类型
         String s = JSON.toJSONString(data);    //将Object转成String
         T t = JSON.parseObject(s, typeReference);     //将文本String逆转成T类型
+        return t;
+    }
+
+    public String getData(String msg, TypeReference<String> stringTypeReference) {
+        Object msgs = get("msg");
+        String jsonString = JSON.toJSONString(msgs);
+        String t = JSON.parseObject(jsonString, stringTypeReference);
         return t;
     }
 
