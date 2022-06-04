@@ -1,6 +1,7 @@
 package com.atguigu.gulimall.order.service.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.amqp.rabbit.annotation.RabbitHandler;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +18,7 @@ import com.atguigu.gulimall.order.entity.OrderItemEntity;
 import com.atguigu.gulimall.order.service.OrderItemService;
 
 @Slf4j
+@RabbitListener(queues = {"hello-java-queue"})  // 监听消息队列，该注解可以标注在类上或者方法上
 @Service("orderItemService")
 public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEntity> implements OrderItemService {
 
@@ -30,7 +32,8 @@ public class OrderItemServiceImpl extends ServiceImpl<OrderItemDao, OrderItemEnt
         return new PageUtils(page);
     }
 
-    @RabbitListener(queues = {"hello-java-queue"})
+    //    @RabbitListener(queues = {"hello-java-queue"})
+    @RabbitHandler
     public void receiveMessage(Object message) {
         log.info("接收到了消息...内容为：{}" + message + "==>类型：" + message.getClass());
     }
