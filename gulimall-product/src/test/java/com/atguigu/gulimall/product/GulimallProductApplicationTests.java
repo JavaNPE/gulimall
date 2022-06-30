@@ -5,6 +5,7 @@ import com.atguigu.gulimall.product.service.BrandService;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang.StringUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.api.RedissonClient;
@@ -16,6 +17,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Slf4j
@@ -115,5 +117,18 @@ public class GulimallProductApplicationTests {
 		list.forEach((item) -> {
 			System.out.println(item);
 		});
+	}
+
+	@Test
+	public void filterTest() {
+		BrandEntity brandEntity = new BrandEntity();
+		List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>().eq("brand_id", 1L));
+		BrandEntity brandEntity2 = brandEntityList.stream().filter(brandEntity1 -> StringUtils.isNotBlank(brandEntity1.getLogo())).findFirst().orElse(null);
+		if (Objects.nonNull(brandEntity2)) {
+			System.out.println("**************");
+		} else {
+			System.out.println("-------------------------");
+
+		}
 	}
 }
