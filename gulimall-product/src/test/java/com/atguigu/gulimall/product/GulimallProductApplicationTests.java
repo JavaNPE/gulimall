@@ -15,9 +15,14 @@ import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RunWith(SpringRunner.class)
@@ -133,6 +138,16 @@ public class GulimallProductApplicationTests {
             System.out.println("**************");
         } else {
             System.out.println("-------------------------");
+        }
+        System.out.println("****************************");
+        Map<Long, BrandEntity> brandEntityMap =
+                brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (o1,
+                                                                                                                 o2) -> o2));
+        Set<Long> idLong = brandEntityMap.keySet();
+        Iterator<Long> iterator = idLong.iterator();
+        while (iterator.hasNext()) {
+            Long key = iterator.next();
+            BrandEntity brandEntity1 = brandEntityMap.get(key);
         }
     }
 }
