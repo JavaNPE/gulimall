@@ -3,6 +3,7 @@ package com.atguigu.gulimall.order;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 
 /**
  * 使用 RabbitMQ步骤
@@ -19,6 +20,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *  @RabbitListener:类+方法上(监听哪些队列)
  *  @RabbitHandler:标在方法上（重载区分不同的消息）
  */
+@EnableDiscoveryClient
 @SpringBootApplication
 @EnableRabbit
 public class GulimallOrderApplication {
