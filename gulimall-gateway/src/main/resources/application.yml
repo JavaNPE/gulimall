@@ -2,16 +2,16 @@ spring:
   cloud:
     gateway:
       routes:
-        - id: test_route    # - : 表示数组
-          uri: https://www.zhihu.com
-          predicates: #所有的断言规则
-            #- Query=rul  #如果我们有‘rul’这个参数，那么我们就去‘https://www.zhihu.com’这个地址
-            - Query=url,zhihu  #如果我们带 了“zhihu”，我们就跳转“https://www.zhihu.com”
-
-        - id: jd_route
-          uri: https://www.jd.com
-          predicates:
-            - Query=url,jd
+#        - id: test_route    # - : 表示数组
+#          uri: https://www.zhihu.com
+#          predicates: #所有的断言规则
+#            #- Query=rul  #如果我们有‘rul’这个参数，那么我们就去‘https://www.zhihu.com’这个地址
+#            - Query=url,zhihu  #如果我们带 了“zhihu”，我们就跳转“https://www.zhihu.com”
+#
+#        - id: jd_route
+#          uri: https://www.jd.com
+#          predicates:
+#            - Query=url,jd
 
         ##将精确的路由规则放置到模糊的路由规则的前面--- Path=/api/product/**是精确路由,压测/hello简单服务
         - id: product_route
@@ -54,7 +54,7 @@ spring:
         - id: gulimall_host_route
           uri: lb://gulimall-product
           predicates:
-            - Host=gulimall.com
+            - Host=gulimall.com,item.gulimall.com
 
           # 只要以search.gulimall.com开头，我们就将其负载均衡到gulimall-search服务
         - id: gulimall_search_route
