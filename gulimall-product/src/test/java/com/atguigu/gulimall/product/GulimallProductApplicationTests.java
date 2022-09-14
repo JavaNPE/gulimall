@@ -5,6 +5,7 @@ import com.atguigu.gulimall.product.service.BrandService;
 import com.atguigu.gulimall.product.service.CategoryService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections.CollectionUtils;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.redisson.api.RedissonClient;
@@ -14,13 +15,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -126,13 +121,27 @@ public class GulimallProductApplicationTests {
     @Test
     public void filterTest() {
         BrandEntity brandEntity = new BrandEntity();
-        List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
+        //List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
+        List<String> brandIds = Arrays.asList("0L");
         List<BrandEntity> brandEntityList =
                 brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
         BrandEntity brandEntity2 = brandEntityList.stream()
                 .filter(brandEntity1 -> brandEntity1.getBrandId() != 2)
                 .findFirst()
                 .orElse(null);
+        // 如果没有查询出来数据的时候是否会报错
+        List<Long> collect = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
+        Map<Long, BrandEntity> collect1 = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId,
+                Function.identity(), (a, b) -> b));
+        List<Long> longList = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(brandEntityList)) {
+            BrandEntity brandEntity3 = brandEntityList.get(0);
+            System.out.println(brandEntity3);
+        }
+
+        if (CollectionUtils.isEmpty(longList)) {
+            System.out.println("________________null_____________");
+        }
         System.out.println(brandEntity2);
         if (Objects.nonNull(brandEntity2)) {
             System.out.println("**************");
