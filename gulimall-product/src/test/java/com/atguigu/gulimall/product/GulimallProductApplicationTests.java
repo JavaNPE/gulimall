@@ -159,4 +159,46 @@ public class GulimallProductApplicationTests {
             BrandEntity brandEntity1 = brandEntityMap.get(key);
         }
     }
+
+    @Test
+    public void filterNullMapTest() {
+        BrandEntity brandEntity = new BrandEntity();
+        //List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
+        List<String> brandIds = Arrays.asList("0L");
+        List<BrandEntity> brandEntityList =
+                brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        Map<Long, BrandEntity> entityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, map -> map));
+        BrandEntity brandEntity2 = entityMap.get("");
+        if (Objects.isNull(brandEntity2)) {
+            System.out.println("--------------------------");
+        }
+        Long brandId = brandEntity2.getBrandId();
+        if (brandId == null) {
+            System.out.println("-----------------");
+        }
+        // 如果没有查询出来数据的时候是否会报错
+        List<Long> collect = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
+        Map<Long, BrandEntity> collect1 = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId,
+                Function.identity(), (a, b) -> b));
+        List<Long> longList = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
+        if (CollectionUtils.isNotEmpty(brandEntityList)) {
+            BrandEntity brandEntity3 = brandEntityList.get(0);
+            System.out.println(brandEntity3);
+        }
+
+        if (CollectionUtils.isEmpty(longList)) {
+            System.out.println("________________null_____________");
+        }
+
+        System.out.println("****************************");
+        Map<Long, BrandEntity> brandEntityMap =
+                brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (o1,
+                                                                                                                 o2) -> o2));
+        Set<Long> idLong = brandEntityMap.keySet();
+        Iterator<Long> iterator = idLong.iterator();
+        while (iterator.hasNext()) {
+            Long key = iterator.next();
+            BrandEntity brandEntity1 = brandEntityMap.get(key);
+        }
+    }
 }
