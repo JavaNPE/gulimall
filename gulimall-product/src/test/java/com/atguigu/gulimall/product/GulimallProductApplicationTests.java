@@ -1,5 +1,6 @@
 package com.atguigu.gulimall.product;
 
+import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gulimall.product.entity.BrandEntity;
 import com.atguigu.gulimall.product.service.BrandService;
 import com.atguigu.gulimall.product.service.CategoryService;
@@ -200,5 +201,28 @@ public class GulimallProductApplicationTests {
             Long key = iterator.next();
             BrandEntity brandEntity1 = brandEntityMap.get(key);
         }
+    }
+
+
+    @Test
+    public void filterNullMapFilterTest() {
+        BrandEntity brandEntity = new BrandEntity();
+        //List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
+        List<String> brandIds = Arrays.asList("1L");
+        List<BrandEntity> brandEntityList =
+                brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        List<Long> longList = brandEntityList.stream().filter(input -> input.getShowStatus().equals("0"))
+                .map(BrandEntity::getBrandId).collect(Collectors.toList());
+        Map<Long, BrandEntity> entityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, map -> map));
+        BrandEntity brandEntity2 = entityMap.get("");
+
+    }
+
+    @Test
+    public void testJson() {
+        List<String> brandIds = Arrays.asList("6L");
+        List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        String logo = brandEntityList.get(0).getLogo();
+        JSONObject.parseArray(logo, BrandEntityBo.class);
     }
 }
