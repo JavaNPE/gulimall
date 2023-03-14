@@ -1,9 +1,10 @@
 package com.atguigu.gulimall.product;
 
-import com.alibaba.fastjson.JSONObject;
 import com.atguigu.gulimall.product.entity.BrandEntity;
+import com.atguigu.gulimall.product.entity.SkuInfoEntity;
 import com.atguigu.gulimall.product.service.BrandService;
 import com.atguigu.gulimall.product.service.CategoryService;
+import com.atguigu.gulimall.product.service.SkuInfoService;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections.CollectionUtils;
@@ -16,6 +17,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.data.redis.core.ValueOperations;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import java.math.BigDecimal;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -40,6 +42,9 @@ public class GulimallProductApplicationTests {
     @Autowired
     RedissonClient redissonClient;
 
+    @Autowired
+    SkuInfoService skuInfoService;
+
     /**
      * 测试Redisson
      */
@@ -58,6 +63,7 @@ public class GulimallProductApplicationTests {
 
         // 保存数据操作
         ops.set("Hello", "World" + UUID.randomUUID().toString());
+        ops.set("测试key", "World" + UUID.randomUUID().toString());
 
         // 查询操作
         String hello = ops.get("Hello");
@@ -124,16 +130,11 @@ public class GulimallProductApplicationTests {
         BrandEntity brandEntity = new BrandEntity();
         //List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
         List<String> brandIds = Arrays.asList("0L");
-        List<BrandEntity> brandEntityList =
-                brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
-        BrandEntity brandEntity2 = brandEntityList.stream()
-                .filter(brandEntity1 -> brandEntity1.getBrandId() != 2)
-                .findFirst()
-                .orElse(null);
+        List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        BrandEntity brandEntity2 = brandEntityList.stream().filter(brandEntity1 -> brandEntity1.getBrandId() != 2).findFirst().orElse(null);
         // 如果没有查询出来数据的时候是否会报错
         List<Long> collect = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
-        Map<Long, BrandEntity> collect1 = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId,
-                Function.identity(), (a, b) -> b));
+        Map<Long, BrandEntity> collect1 = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (a, b) -> b));
         List<Long> longList = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(brandEntityList)) {
             BrandEntity brandEntity3 = brandEntityList.get(0);
@@ -150,9 +151,7 @@ public class GulimallProductApplicationTests {
             System.out.println("-------------------------");
         }
         System.out.println("****************************");
-        Map<Long, BrandEntity> brandEntityMap =
-                brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (o1,
-                                                                                                                 o2) -> o2));
+        Map<Long, BrandEntity> brandEntityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (o1, o2) -> o2));
         Set<Long> idLong = brandEntityMap.keySet();
         Iterator<Long> iterator = idLong.iterator();
         while (iterator.hasNext()) {
@@ -166,8 +165,7 @@ public class GulimallProductApplicationTests {
         BrandEntity brandEntity = new BrandEntity();
         //List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
         List<String> brandIds = Arrays.asList("0L");
-        List<BrandEntity> brandEntityList =
-                brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
         Map<Long, BrandEntity> entityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, map -> map));
         BrandEntity brandEntity2 = entityMap.get("");
         if (Objects.isNull(brandEntity2)) {
@@ -179,8 +177,7 @@ public class GulimallProductApplicationTests {
         }
         // 如果没有查询出来数据的时候是否会报错
         List<Long> collect = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
-        Map<Long, BrandEntity> collect1 = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId,
-                Function.identity(), (a, b) -> b));
+        Map<Long, BrandEntity> collect1 = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (a, b) -> b));
         List<Long> longList = brandEntityList.stream().map(BrandEntity::getBrandId).collect(Collectors.toList());
         if (CollectionUtils.isNotEmpty(brandEntityList)) {
             BrandEntity brandEntity3 = brandEntityList.get(0);
@@ -192,9 +189,7 @@ public class GulimallProductApplicationTests {
         }
 
         System.out.println("****************************");
-        Map<Long, BrandEntity> brandEntityMap =
-                brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (o1,
-                                                                                                                 o2) -> o2));
+        Map<Long, BrandEntity> brandEntityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (o1, o2) -> o2));
         Set<Long> idLong = brandEntityMap.keySet();
         Iterator<Long> iterator = idLong.iterator();
         while (iterator.hasNext()) {
@@ -207,22 +202,57 @@ public class GulimallProductApplicationTests {
     @Test
     public void filterNullMapFilterTest() {
         BrandEntity brandEntity = new BrandEntity();
-        //List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
-        List<String> brandIds = Arrays.asList("1L");
-        List<BrandEntity> brandEntityList =
-                brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
-        List<Long> longList = brandEntityList.stream().filter(input -> input.getShowStatus().equals("0"))
+        List<String> brandIds = Arrays.asList("1L", "2L", "3L", "4L");
+        // List<String> brandIds = Arrays.asList("111L");
+        List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
+        if (brandEntityList.size() == 1) {
+            System.out.println("brandEntityList.size()");
+        }
+        if (CollectionUtils.isEmpty(brandEntityList)) {
+            System.out.println("brandEntityList is empty!!!");
+        }
+        List<Long> longs = brandEntityList.stream()
+                .filter(input -> input.getBrandId().equals(Long.valueOf("1")))
                 .map(BrandEntity::getBrandId).collect(Collectors.toList());
-        Map<Long, BrandEntity> entityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, map -> map));
-        BrandEntity brandEntity2 = entityMap.get("");
+        if (longs.contains(Long.valueOf("1"))) {
+            System.out.println("JIJIJIJIJI");
+        }
+        if (CollectionUtils.isEmpty(longs)) {
+            System.out.println("-----------");
+        }
 
+
+        List<Long> longList = brandEntityList.stream().filter(input -> input.getShowStatus().equals("0")).map(BrandEntity::getBrandId).collect(Collectors.toList());
+        Map<Long, BrandEntity> entityMap = brandEntityList.stream().collect(Collectors.toMap(BrandEntity::getBrandId, map -> map));
+        BrandEntity brandEntity2 = entityMap.get(null);
+        Long brandId = brandEntity2.getBrandId();
+        System.out.println(brandId);
     }
 
     @Test
-    public void testJson() {
-        List<String> brandIds = Arrays.asList("6L");
+    public void testNPE() {
+        List<String> brandIds = Arrays.asList("607L");
+        Long brandId = Long.valueOf("70");
         List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>().in("brand_id", brandIds));
-        String logo = brandEntityList.get(0).getLogo();
-        JSONObject.parseArray(logo, BrandEntityBo.class);
+        BrandEntity brandEntity = brandService.getById(brandId);
+        Long aLong = Optional.ofNullable(brandEntity.getBrandId()).orElse(null);
+        System.out.println("aLong:" + aLong);
+
+
+        Map<Long, BrandEntity> collect = brandEntityList.stream().filter(input -> input.getBrandId().equals("1")).collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (a, b) -> b));
+        List<BrandEntity> list = brandEntityList.stream().filter(input -> "1".equals(input.getBrandId())).collect(Collectors.toList());
+        if (CollectionUtils.isEmpty(list)) {
+            System.out.println("-------------------------fefewfre");
+        }
+        if (brandEntityList.contains("1")) {
+            System.out.println("_______________");
+        }
+    }
+
+    @Test
+    public void testNull() {
+        SkuInfoEntity skuInfo = skuInfoService.getSkuBySpuId(Long.valueOf("1"));
+        BigDecimal bigDecimal = Optional.ofNullable(skuInfo == null ? BigDecimal.ZERO : skuInfo.getPrice()).orElse(BigDecimal.ZERO);
+        System.out.println("输出值：" + bigDecimal);
     }
 }

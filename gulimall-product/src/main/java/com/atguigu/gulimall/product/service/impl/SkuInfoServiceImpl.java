@@ -1,21 +1,19 @@
 package com.atguigu.gulimall.product.service.impl;
 
+import com.atguigu.common.utils.PageUtils;
+import com.atguigu.common.utils.Query;
+import com.atguigu.gulimall.product.dao.SkuInfoDao;
+import com.atguigu.gulimall.product.entity.SkuInfoEntity;
+import com.atguigu.gulimall.product.service.SkuInfoService;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.baomidou.mybatisplus.core.metadata.IPage;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
-
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.atguigu.common.utils.PageUtils;
-import com.atguigu.common.utils.Query;
-
-import com.atguigu.gulimall.product.dao.SkuInfoDao;
-import com.atguigu.gulimall.product.entity.SkuInfoEntity;
-import com.atguigu.gulimall.product.service.SkuInfoService;
 
 
 @Service("skuInfoService")
@@ -105,5 +103,14 @@ public class SkuInfoServiceImpl extends ServiceImpl<SkuInfoDao, SkuInfoEntity> i
          */
         List<SkuInfoEntity> list = this.list(new QueryWrapper<SkuInfoEntity>().eq("spu_id", spuId));
         return list;
+    }
+
+    @Override
+    public SkuInfoEntity getSkuBySpuId(Long spuId) {
+        /**
+         * 查询集合信息
+         */
+        SkuInfoEntity skuInfoEntity = this.getOne(new QueryWrapper<SkuInfoEntity>().eq("spu_id", spuId));
+        return skuInfoEntity;
     }
 }
