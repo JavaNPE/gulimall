@@ -242,16 +242,18 @@ public class GulimallProductApplicationTests {
 
     @Test
     public void testNPE() {
-        List<String> brandIds = Arrays.asList("607L");
-        Long brandId = Long.valueOf("70");
+        List<String> brandIds = Arrays.asList("1L");
+        //Long brandId = Long.valueOf("1L");
         List<BrandEntity> brandEntityList = brandService.list(new QueryWrapper<BrandEntity>()
                 .in("brand_id", brandIds));
-        BrandEntity brandEntity = brandService.getById(brandId);
-        Long aLong = Optional.ofNullable(brandEntity.getBrandId()).orElse(null);
-        System.out.println("aLong:" + aLong);
+        brandEntityList.forEach(input -> input.setDescript("就是任性"));
+        System.out.println(brandEntityList);
+        //BrandEntity brandEntity = brandService.getById(brandId);
+        //Long aLong = Optional.ofNullable(brandEntity.getBrandId()).orElse(null);
+        //System.out.println("aLong:" + aLong);
 
 
-        Map<Long, BrandEntity> collect = brandEntityList.stream()
+        /*Map<Long, BrandEntity> collect = brandEntityList.stream()
                 .filter(input -> input.getBrandId().equals("1"))
                 .collect(Collectors.toMap(BrandEntity::getBrandId, Function.identity(), (a, b) -> b));
         List<BrandEntity> list = brandEntityList.stream()
@@ -262,7 +264,7 @@ public class GulimallProductApplicationTests {
         }
         if (brandEntityList.contains("1")) {
             System.out.println("_______________");
-        }
+        }*/
     }
 
     @Test
