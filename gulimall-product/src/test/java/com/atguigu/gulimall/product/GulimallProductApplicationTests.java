@@ -240,6 +240,27 @@ public class GulimallProductApplicationTests {
         System.out.println(brandId);
     }
 
+    /**
+     * 使用reduce进行BigDecimal求和时，在map前进行过滤和map后过滤.filter(Objects::nonNull)的区别
+     */
+    @Test
+    public void testBigDecimalNull() {
+
+
+        List<String> skuInfos = Arrays.asList("1", "2", "3");
+
+        List<SkuInfoEntity> skuInfoList = skuInfoService.list(new QueryWrapper<SkuInfoEntity>()
+                .in("sku_id", skuInfos));
+
+        BigDecimal sum = skuInfoList.stream()
+                //.filter(input-> Objects.nonNull(input.getPrice()))
+                .map(SkuInfoEntity::getPrice)
+                .filter(Objects::nonNull)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        System.out.println("求和：" + sum);
+    }
+
     @Test
     public void testNPE() {
         List<String> brandIds = Arrays.asList("1L");
@@ -274,4 +295,7 @@ public class GulimallProductApplicationTests {
                 .orElse(BigDecimal.ZERO);
         System.out.println("输出值：" + bigDecimal);
     }
+
+    //Map<Long, Entity> entityMap= entityList.stream().collect(Collectors.toMap(Entity::getType, (entity) -> entity));
+    //Map<Long, Entity> entityMap= entityList.stream().collect(Collectors.toMap(Entity::getType, Function.identity(),(entity1,entity2) -> entity1));
 }
